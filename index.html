@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gritty Grave Piano Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Anton&family=Barlow:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0a0c07;
+    --bg2:#0e1109;
+    --panel:#13160d;
+    --panel-2:#1b2012;
+    --panel-3:#222a16;
+    --line:#2e3a1d;
+    --line-2:#41502a;
+    --green:#a9d92e;
+    --green-bright:#c4f23a;
+    --green-soft:#d6e98a;
+    --blood:#d83a2b;
+    --blood-bright:#ff5747;
+    --yellow:#ecc83a;
+    --teal:#3fb6a8;
+    --ink:#e9e7d6;
+    --muted:#8b8f74;
+    --muted-2:#5f6549;
+    --radius:13px;
+    --shadow:0 20px 55px -18px rgba(0,0,0,.9);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Barlow',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.55;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.06;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  ::selection{background:var(--green);color:#11150a;}
+  .wrap{max-width:980px;margin:0 auto;padding:0 16px 90px;}
+
+  /* ---------- HEADER ---------- */
+  header{position:relative;padding:30px 0 18px;text-align:center;}
+  .glow{
+    position:absolute;top:-90px;left:50%;transform:translateX(-50%);
+    width:560px;height:300px;border-radius:50%;
+    background:radial-gradient(closest-side,rgba(169,217,46,.20),transparent);
+    filter:blur(24px);pointer-events:none;
+  }
+  .pixrow{display:flex;gap:3px;justify-content:center;margin-bottom:12px;}
+  .pixrow i{width:7px;height:7px;background:var(--green);display:block;opacity:.5;border-radius:1px;}
+  .pixrow i:nth-child(2n){background:var(--yellow);opacity:.35;}
+  .pixrow i:nth-child(3n){opacity:.85;}
+  .pixrow i:nth-child(5n){background:var(--blood);opacity:.4;}
+  h1.title{
+    font-family:'Creepster',system-ui;font-weight:400;
+    font-size:clamp(42px,12vw,84px);line-height:.92;letter-spacing:.02em;
+    color:var(--green-bright);
+    text-shadow:0 0 22px rgba(169,217,46,.55), 3px 4px 0 #2c3a13, 0 0 4px #000;
+  }
+  .subtitle{
+    font-family:'Anton',sans-serif;font-size:clamp(15px,3.6vw,22px);
+    letter-spacing:.42em;color:var(--ink);margin-top:2px;text-indent:.42em;
+  }
+  .tag{
+    font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--muted);margin-top:9px;
+  }
+  .progwrap{margin-top:22px;text-align:left;}
+  .progtop{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+  .progtop .lbl{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+  .progtop .pct{font-family:'Anton',sans-serif;font-size:17px;color:var(--green);letter-spacing:.04em;}
+  .progbar{height:10px;border-radius:99px;background:var(--panel-2);overflow:hidden;border:1px solid var(--line);}
+  .progfill{height:100%;width:0%;border-radius:99px;
+    background:linear-gradient(90deg,#5e7a18,var(--green),var(--green-bright));
+    box-shadow:0 0 12px rgba(169,217,46,.5);
+    transition:width .5s cubic-bezier(.4,0,.2,1);}
+
+  /* ---------- TABS ---------- */
+  nav{
+    display:flex;gap:5px;margin:22px 0 8px;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px;
+    position:sticky;top:8px;z-index:50;box-shadow:var(--shadow);overflow-x:auto;
+  }
+  nav::-webkit-scrollbar{height:0;}
+  nav button{
+    flex:1;min-width:78px;border:0;cursor:pointer;background:transparent;color:var(--muted);
+    font-family:'Anton',sans-serif;font-size:13px;letter-spacing:.07em;
+    padding:11px 7px;border-radius:8px;white-space:nowrap;transition:.18s;text-transform:uppercase;
+  }
+  nav button:hover{color:var(--ink);}
+  nav button.on{background:linear-gradient(160deg,var(--green),#7ba320);color:#11150a;
+    box-shadow:0 6px 16px -6px rgba(169,217,46,.55);}
+
+  .panel{display:none;animation:rise .4s cubic-bezier(.2,.7,.2,1);}
+  .panel.on{display:block;}
+  @keyframes rise{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+
+  section{margin-top:20px;}
+  .eyebrow{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--green);margin-bottom:5px;}
+  h2{font-family:'Anton',sans-serif;font-size:clamp(23px,5.5vw,32px);letter-spacing:.01em;line-height:1.08;}
+  .lead{color:var(--muted);margin-top:6px;font-size:14.5px;}
+
+  /* ---------- MIDI BAR ---------- */
+  .midi-bar{
+    display:flex;align-items:center;gap:11px;margin-top:16px;
+    background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:11px 13px;
+  }
+  .midi-dot{width:11px;height:11px;border-radius:50%;background:var(--muted-2);flex:none;
+    box-shadow:0 0 0 0 rgba(169,217,46,0);transition:.3s;}
+  .midi-dot.on{background:var(--green);box-shadow:0 0 12px 2px rgba(169,217,46,.7);}
+  .midi-dot.err{background:var(--blood);}
+  .midi-txt{flex:1;min-width:0;font-size:12.5px;color:var(--muted);}
+  .midi-txt b{color:var(--ink);font-weight:600;}
+  .midi-btn{
+    border:1px solid var(--line-2);background:var(--panel-2);color:var(--green);
+    font-family:'Anton',sans-serif;font-size:12px;letter-spacing:.06em;text-transform:uppercase;
+    padding:9px 14px;border-radius:8px;cursor:pointer;transition:.15s;flex:none;
+  }
+  .midi-btn:hover{background:var(--green);color:#11150a;border-color:var(--green);}
+
+  /* ---------- LESSONS ---------- */
+  .phase-head{display:flex;align-items:center;gap:11px;margin:28px 0 11px;}
+  .phase-num{font-family:'Anton',sans-serif;font-size:13px;letter-spacing:.06em;
+    background:var(--panel-2);border:1px solid var(--line);color:var(--green);
+    padding:6px 11px;border-radius:7px;flex:none;text-transform:uppercase;}
+  .phase-head h3{font-family:'Anton',sans-serif;font-size:18px;letter-spacing:.02em;}
+  .phase-head .sub{font-size:12px;color:var(--muted-2);}
+
+  .lesson{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    margin-bottom:9px;overflow:hidden;transition:border-color .2s;}
+  .lesson.open{border-color:var(--line-2);}
+  .lhead{display:flex;align-items:center;gap:12px;padding:14px 15px;cursor:pointer;user-select:none;}
+  .lnum{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;
+    width:30px;height:30px;border-radius:7px;flex:none;display:grid;place-items:center;
+    background:var(--panel-2);border:1px solid var(--line);color:var(--muted);transition:.2s;}
+  .lesson.open .lnum,.lesson.done .lnum{background:var(--green);color:#11150a;border-color:var(--green);}
+  .ltitle{flex:1;font-family:'Anton',sans-serif;font-size:15.5px;letter-spacing:.02em;}
+  .lchev{color:var(--muted);transition:transform .25s;flex:none;}
+  .lesson.open .lchev{transform:rotate(180deg);}
+  .lbody{max-height:0;overflow:hidden;transition:max-height .4s ease;}
+  .lbody-inner{padding:2px 15px 17px;}
+  .lbody-inner p{margin-bottom:10px;font-size:14px;color:#d3d2bf;}
+  .lbody-inner strong{color:var(--ink);font-weight:700;}
+  .lbody-inner .g{color:var(--green);font-weight:600;}
+
+  .note-box{background:var(--bg2);border-left:3px solid var(--green);border-radius:0 8px 8px 0;
+    padding:10px 12px;margin:12px 0;font-size:13px;color:#c3c5a8;}
+  .note-box b{color:var(--green-bright);}
+
+  .formula{display:flex;flex-wrap:wrap;gap:5px;margin:12px 0;}
+  .step{font-family:'Space Mono',monospace;font-weight:700;font-size:12px;
+    padding:7px 11px;border-radius:7px;background:var(--panel-2);border:1px solid var(--line);}
+  .step.w{color:var(--green);}
+  .step.h{color:var(--yellow);}
+
+  .chip{display:inline-flex;align-items:center;gap:5px;cursor:pointer;
+    background:var(--panel-2);border:1px solid var(--line-2);border-radius:6px;
+    padding:2px 8px;margin:0 2px;font-family:'Space Mono',monospace;font-size:11px;
+    font-weight:700;color:var(--green);transition:.15s;vertical-align:middle;}
+  .chip:hover{background:var(--green);color:#11150a;border-color:var(--green);}
+  .chip::before{content:"\25B6";font-size:8px;}
+
+  /* mini keyboard in lessons */
+  .mini-piano{position:relative;height:78px;margin:13px 0 6px;
+    background:linear-gradient(180deg,#080a06,#14160d);border-radius:8px;
+    border:1px solid var(--line);padding:7px;}
+  .mini-keys{position:relative;height:100%;}
+  .mk-w{position:absolute;top:0;height:100%;width:12.5%;
+    background:linear-gradient(180deg,#ece8d8,#c4bda9);border:1px solid #060805;
+    border-radius:0 0 4px 4px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;}
+  .mk-w span{font-family:'Space Mono',monospace;font-size:8px;font-weight:700;color:#7d7763;}
+  .mk-w.mk-on{background:linear-gradient(180deg,#d4ee7c,var(--green));}
+  .mk-w.mk-root{background:linear-gradient(180deg,#f6dd6e,var(--yellow));}
+  .mk-w.mk-on span,.mk-w.mk-root span{color:#2a3210;}
+  .mk-b{position:absolute;top:0;height:60%;width:8%;z-index:3;
+    background:linear-gradient(180deg,#262017,#060604);border:1px solid #000;
+    border-radius:0 0 3px 3px;box-shadow:0 3px 5px rgba(0,0,0,.6);}
+  .mk-b.mk-on{background:linear-gradient(180deg,#8aac34,#5e7a18);}
+  .mk-b.mk-root{background:linear-gradient(180deg,#caa42a,#9a7d18);}
+
+  .mark{margin-top:13px;display:flex;align-items:center;gap:9px;cursor:pointer;
+    font-family:'Space Mono',monospace;font-size:11.5px;letter-spacing:.04em;
+    text-transform:uppercase;color:var(--muted);user-select:none;}
+  .mark .box{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--line);
+    background:var(--panel-2);flex:none;display:grid;place-items:center;transition:.2s;}
+  .lesson.done .mark .box{background:var(--green);border-color:var(--green);}
+  .lesson.done .mark{color:var(--green);}
+  .mark .box svg{opacity:0;transition:.2s;}
+  .lesson.done .mark .box svg{opacity:1;}
+
+  /* ---------- CONSOLE / CONTROLS ---------- */
+  .console{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:15px;box-shadow:var(--shadow);}
+  .ctl-row{margin-bottom:13px;}
+  .ctl-row:last-child{margin-bottom:0;}
+  .ctl-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;}
+  .pick{border:1px solid var(--line);background:var(--panel-2);color:var(--muted);
+    font-family:'Anton',sans-serif;font-size:13px;letter-spacing:.03em;
+    padding:9px 12px;border-radius:8px;cursor:pointer;transition:.15s;min-width:40px;}
+  .pick:hover{color:var(--ink);border-color:var(--line-2);}
+  .pick.on{background:linear-gradient(160deg,var(--green),#7ba320);color:#11150a;border-color:var(--green);}
+  .pick.wide{flex:1;min-width:84px;text-align:center;}
+
+  .play-btn{margin-top:4px;width:100%;border:0;cursor:pointer;
+    background:linear-gradient(160deg,var(--blood-bright),#b32d20);color:#fff;
+    font-family:'Anton',sans-serif;font-size:16px;letter-spacing:.05em;text-transform:uppercase;
+    padding:14px;border-radius:10px;box-shadow:0 10px 24px -8px rgba(216,58,43,.6);transition:.15s;
+    display:flex;align-items:center;justify-content:center;gap:9px;}
+  .play-btn:hover{transform:translateY(-1px);}
+  .play-btn:active{transform:translateY(1px);}
+
+  .readout{margin-top:13px;background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:12px;}
+  .readout .ro-lbl{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.13em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+  .readout .ro-notes{display:flex;flex-wrap:wrap;gap:5px;}
+  .ro-note{font-family:'Anton',sans-serif;font-size:14px;letter-spacing:.02em;
+    padding:6px 10px;border-radius:7px;background:var(--panel-2);
+    border:1px solid var(--line);color:var(--green-soft);}
+  .ro-note.root{background:var(--yellow);color:#2a3210;border-color:var(--yellow);}
+  .ro-deg{font-size:8.5px;display:block;font-family:'Space Mono',monospace;
+    font-weight:400;opacity:.7;letter-spacing:.04em;}
+
+  /* ---------- PIANO ---------- */
+  .piano-scroll{margin-top:15px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px;}
+  .piano-scroll::-webkit-scrollbar{height:6px;}
+  .piano-scroll::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:9px;}
+  .piano{position:relative;height:190px;min-width:640px;
+    background:linear-gradient(180deg,#070905,#161a0e);border-radius:9px;padding:8px;
+    border:1px solid var(--line);}
+  .keys{position:relative;height:100%;}
+  .wkey{position:absolute;top:0;height:100%;
+    background:linear-gradient(180deg,#ece8d8,#cac3af);
+    border-radius:0 0 5px 5px;border:1px solid #060805;cursor:pointer;transition:.06s;
+    display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;}
+  .wkey:active,.wkey.k-press{background:linear-gradient(180deg,#cfc8b5,#aca591);transform:translateY(2px);}
+  .wkey .kn{font-family:'Space Mono',monospace;font-size:9px;font-weight:700;color:#85806c;}
+  .wkey.k-scale{background:linear-gradient(180deg,#cbe388,#a9d92e);}
+  .wkey.k-chord{background:linear-gradient(180deg,#d4ee7c,#a9d92e);}
+  .wkey.k-root{background:linear-gradient(180deg,#f6dd6e,#ecc83a);}
+  .wkey.k-scale .kn,.wkey.k-chord .kn,.wkey.k-root .kn{color:#2a3210;}
+  .wkey.k-ghost{background:linear-gradient(180deg,#fff,#e8e2cf);
+    box-shadow:inset 0 0 0 3px var(--yellow);}
+  .wkey.k-correct{background:linear-gradient(180deg,#b6ef4a,#7fc416)!important;
+    box-shadow:0 0 18px 3px rgba(169,217,46,.85);}
+  .wkey.k-wrong{background:linear-gradient(180deg,#ff7d70,#d83a2b)!important;
+    box-shadow:0 0 18px 3px rgba(216,58,43,.8);}
+  .bkey{position:absolute;top:0;height:62%;z-index:3;
+    background:linear-gradient(180deg,#272118,#070604);
+    border-radius:0 0 4px 4px;border:1px solid #000;cursor:pointer;transition:.06s;
+    display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;
+    box-shadow:0 4px 6px rgba(0,0,0,.6);}
+  .bkey:active,.bkey.k-press{background:linear-gradient(180deg,#161208,#000);transform:translateY(2px);}
+  .bkey .kn{font-family:'Space Mono',monospace;font-size:8px;font-weight:700;color:#666045;}
+  .bkey.k-scale{background:linear-gradient(180deg,#7c9a2c,#577117);}
+  .bkey.k-chord{background:linear-gradient(180deg,#8aac34,#5e7a18);}
+  .bkey.k-root{background:linear-gradient(180deg,#c9a52b,#9a7d18);}
+  .bkey.k-scale .kn,.bkey.k-chord .kn,.bkey.k-root .kn{color:#fff;}
+  .bkey.k-ghost{box-shadow:inset 0 0 0 2px var(--yellow);background:linear-gradient(180deg,#3a3320,#171307);}
+  .bkey.k-correct{background:linear-gradient(180deg,#8fcf2a,#5e8c12)!important;
+    box-shadow:0 0 16px 3px rgba(169,217,46,.85);}
+  .bkey.k-wrong{background:linear-gradient(180deg,#e0594a,#a82a1f)!important;
+    box-shadow:0 0 16px 3px rgba(216,58,43,.8);}
+  .bkey.lit,.wkey.lit{box-shadow:0 0 16px 3px rgba(169,217,46,.7);}
+
+  .hint{font-size:11px;color:var(--muted-2);margin-top:8px;text-align:center;
+    font-family:'Space Mono',monospace;letter-spacing:.04em;}
+
+  /* ---------- TRAINER ---------- */
+  .challenge{
+    background:linear-gradient(150deg,var(--panel-2),var(--panel));
+    border:1px solid var(--line-2);border-radius:var(--radius);
+    padding:18px 16px;text-align:center;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+  .challenge.win{animation:winflash .6s ease;}
+  @keyframes winflash{0%,100%{box-shadow:var(--shadow);}40%{box-shadow:0 0 0 3px var(--green),0 0 40px rgba(169,217,46,.5);}}
+  .ch-cue{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--muted);}
+  .ch-target{font-family:'Anton',sans-serif;font-size:clamp(30px,8vw,46px);
+    letter-spacing:.02em;color:var(--green-bright);margin:3px 0;
+    text-shadow:0 0 18px rgba(169,217,46,.4);}
+  .ch-sub{font-size:12.5px;color:var(--muted);}
+  .ch-stats{display:flex;justify-content:center;gap:18px;margin-top:11px;}
+  .ch-stat{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+  .ch-stat b{font-family:'Anton',sans-serif;font-size:18px;color:var(--green);letter-spacing:.04em;margin-right:4px;}
+  .ch-feedback{margin-top:10px;font-family:'Anton',sans-serif;font-size:15px;
+    letter-spacing:.06em;text-transform:uppercase;min-height:20px;transition:.2s;}
+  .ch-feedback.ok{color:var(--green-bright);}
+  .ch-feedback.bad{color:var(--blood-bright);}
+  .ch-feedback.idle{color:var(--muted-2);}
+  .tr-btns{display:flex;gap:7px;margin-top:13px;}
+  .tr-btn{flex:1;border:1px solid var(--line-2);background:var(--panel-2);color:var(--ink);
+    font-family:'Anton',sans-serif;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;
+    padding:11px;border-radius:9px;cursor:pointer;transition:.15s;}
+  .tr-btn:hover{border-color:var(--green);color:var(--green);}
+  .tr-btn.hear{color:var(--blood-bright);}
+  .tr-btn.hear:hover{border-color:var(--blood);color:var(--blood-bright);}
+
+  /* ---------- KEY CHART ---------- */
+  .chord-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:8px;margin-top:15px;}
+  .chord-card{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;
+    padding:11px 10px;cursor:pointer;transition:.15s;text-align:center;}
+  .chord-card:hover{border-color:var(--green);transform:translateY(-2px);}
+  .chord-card:active{transform:translateY(0);}
+  .cc-roman{font-family:'Space Mono',monospace;font-size:11px;color:var(--green);
+    letter-spacing:.04em;margin-bottom:3px;}
+  .cc-name{font-family:'Anton',sans-serif;font-size:18px;letter-spacing:.02em;}
+  .cc-notes{font-family:'Space Mono',monospace;font-size:9.5px;color:var(--muted);margin-top:4px;}
+  .cc-qual{font-size:9.5px;color:var(--muted-2);margin-top:2px;text-transform:uppercase;letter-spacing:.05em;}
+
+  .prog-list{margin-top:16px;display:flex;flex-direction:column;gap:7px;}
+  .prog-card{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;
+    padding:11px 12px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:.15s;}
+  .prog-card:hover{border-color:var(--blood);}
+  .prog-play{width:38px;height:38px;border-radius:8px;flex:none;display:grid;place-items:center;
+    background:linear-gradient(160deg,var(--blood-bright),#b32d20);color:#fff;font-size:13px;
+    box-shadow:0 6px 14px -6px rgba(216,58,43,.6);}
+  .prog-info{flex:1;min-width:0;}
+  .prog-roman{font-family:'Anton',sans-serif;font-size:16px;letter-spacing:.03em;}
+  .prog-desc{font-size:11.5px;color:var(--muted);}
+  .prog-chords{font-family:'Space Mono',monospace;font-size:10px;color:var(--green);margin-top:2px;}
+
+  /* ---------- CHECKLIST ---------- */
+  .check-phase{margin-top:20px;}
+  .check-phase h3{font-family:'Anton',sans-serif;font-size:16px;letter-spacing:.03em;
+    display:flex;align-items:center;gap:9px;margin-bottom:10px;}
+  .cp-dot{width:9px;height:9px;border-radius:50%;background:var(--green);flex:none;
+    box-shadow:0 0 8px rgba(169,217,46,.6);}
+  .check-item{display:flex;align-items:flex-start;gap:11px;padding:12px;cursor:pointer;
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    margin-bottom:6px;transition:.15s;user-select:none;}
+  .check-item:hover{border-color:var(--line-2);}
+  .check-item.done{background:var(--bg2);}
+  .ci-box{width:22px;height:22px;border-radius:6px;flex:none;margin-top:1px;
+    border:1.5px solid var(--line);background:var(--panel-2);
+    display:grid;place-items:center;transition:.2s;}
+  .check-item.done .ci-box{background:var(--green);border-color:var(--green);}
+  .ci-box svg{opacity:0;transition:.2s;}
+  .check-item.done .ci-box svg{opacity:1;}
+  .ci-text{font-size:13.5px;color:#d3d2bf;transition:.2s;}
+  .check-item.done .ci-text{color:var(--muted-2);text-decoration:line-through;}
+
+  .reset{margin-top:22px;width:100%;background:transparent;border:1px dashed var(--line);
+    color:var(--muted-2);font-family:'Space Mono',monospace;font-size:11px;
+    letter-spacing:.1em;text-transform:uppercase;padding:12px;border-radius:9px;cursor:pointer;transition:.15s;}
+  .reset:hover{color:var(--blood);border-color:var(--blood);}
+
+  /* ---------- DEEP DIVE ---------- */
+  .dd-sec{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    margin-bottom:10px;overflow:hidden;transition:border-color .2s;}
+  .dd-sec.open{border-color:var(--line-2);}
+  .dd-head{display:flex;align-items:center;gap:13px;padding:15px;cursor:pointer;user-select:none;}
+  .dd-icon{width:38px;height:38px;border-radius:9px;flex:none;display:grid;place-items:center;
+    background:linear-gradient(150deg,var(--panel-3),var(--panel-2));border:1px solid var(--line-2);
+    font-size:19px;transition:.2s;}
+  .dd-sec.open .dd-icon{background:linear-gradient(150deg,var(--green),#7ba320);}
+  .dd-titles{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .dd-title{font-family:'Anton',sans-serif;font-size:16px;letter-spacing:.02em;line-height:1.15;}
+  .dd-tag{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.05em;
+    color:var(--muted-2);text-transform:uppercase;margin-top:2px;}
+  .dd-body{max-height:0;overflow:hidden;transition:max-height .45s ease;}
+  .dd-inner{padding:2px 15px 18px;}
+  .dd-inner p{margin-bottom:10px;font-size:14px;color:#d3d2bf;}
+  .dd-inner strong{color:var(--ink);font-weight:700;}
+  .dd-inner .g{color:var(--green);font-weight:600;}
+  .dd-inner h4{font-family:'Anton',sans-serif;font-size:14px;letter-spacing:.04em;
+    color:var(--green-soft);margin:16px 0 7px;text-transform:uppercase;}
+  .dd-inner h4:first-child{margin-top:6px;}
+
+  .beat-card{background:var(--bg2);border:1px solid var(--line);border-radius:10px;
+    padding:12px 13px;margin:10px 0;}
+  .beat-card .bc-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:3px;}
+  .beat-card .bc-name{font-family:'Anton',sans-serif;font-size:15px;letter-spacing:.02em;}
+  .beat-card .bc-meta{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.04em;flex:none;}
+  .beat-card .bc-desc{font-size:12.5px;color:var(--muted);margin-bottom:8px;}
+  .beat-card .bc-play{display:flex;flex-wrap:wrap;gap:5px;}
+
+  .prod-card{background:var(--bg2);border:1px solid var(--line);border-radius:10px;
+    padding:13px;margin:10px 0;border-left:3px solid var(--green);}
+  .prod-card .pc-name{font-family:'Anton',sans-serif;font-size:17px;letter-spacing:.03em;color:var(--green-bright);}
+  .prod-card .pc-vibe{font-size:13px;color:#d3d2bf;margin:5px 0 9px;}
+  .prod-card .pc-lbl{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--muted-2);margin-bottom:5px;}
+
+  .mood-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin:10px 0;}
+  .mood-card{background:var(--bg2);border:1px solid var(--line);border-radius:10px;
+    padding:12px;cursor:pointer;transition:.15s;}
+  .mood-card:hover{border-color:var(--green);transform:translateY(-2px);}
+  .mood-card .mc-name{font-family:'Anton',sans-serif;font-size:14px;letter-spacing:.03em;}
+  .mood-card .mc-recipe{font-family:'Space Mono',monospace;font-size:10px;color:var(--green);margin-top:4px;}
+  .mood-card .mc-note{font-size:11.5px;color:var(--muted);margin-top:5px;}
+
+  footer{text-align:center;margin-top:42px;padding-top:20px;border-top:1px solid var(--line);}
+  footer p{font-family:'Space Mono',monospace;font-size:10.5px;color:var(--muted-2);letter-spacing:.05em;}
+  footer .gg{font-family:'Creepster',system-ui;font-size:16px;color:var(--green);letter-spacing:.04em;}
+
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);
+    background:var(--green);color:#11150a;font-family:'Anton',sans-serif;font-size:14px;
+    letter-spacing:.04em;text-transform:uppercase;padding:11px 20px;border-radius:99px;
+    opacity:0;pointer-events:none;transition:.3s;z-index:300;box-shadow:0 12px 30px -8px rgba(0,0,0,.7);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast.bad{background:var(--blood);color:#fff;}
+
+  @media(max-width:540px){
+    .wrap{padding:0 11px 80px;}
+    .chord-grid{grid-template-columns:repeat(auto-fill,minmax(94px,1fr));}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="glow"></div>
+    <div class="pixrow">
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+    <h1 class="title">Gritty Grave</h1>
+    <div class="subtitle">PIANO LAB</div>
+    <div class="tag">Piano Theory &amp; Practice · Built for Producers</div>
+    <div class="progwrap">
+      <div class="progtop">
+        <span class="lbl">Your Progress</span>
+        <span class="pct" id="pct">0%</span>
+      </div>
+      <div class="progbar"><div class="progfill" id="progfill"></div></div>
+    </div>
+  </header>
+
+  <nav>
+    <button class="on" data-tab="lessons">Lessons</button>
+    <button data-tab="lab">Piano Lab</button>
+    <button data-tab="trainer">Trainer</button>
+    <button data-tab="charts">Key Charts</button>
+    <button data-tab="deepdive">Deep Dive</button>
+    <button data-tab="progress">Progress</button>
+  </nav>
+
+  <!-- ============ LESSONS ============ -->
+  <div class="panel on" id="lessons">
+    <section>
+      <div class="eyebrow">The Course</div>
+      <h2>From zero keys to writing progressions</h2>
+      <p class="lead">Work through it in order. Tap a lesson to open it. Orange <span class="chip" data-play="scale|0|major">chips</span> play the sound. Some lessons show a keyboard with the keys lit up. Mark lessons done as you go — it saves automatically.</p>
+    </section>
+    <div id="lessonContainer"></div>
+  </div>
+
+  <!-- ============ PIANO LAB ============ -->
+  <div class="panel" id="lab">
+    <section>
+      <div class="eyebrow">Interactive Keyboard</div>
+      <h2>Piano Lab</h2>
+      <p class="lead">Pick a root note and a scale or chord — the keys light up and play. Tap any key to play it. Connect a MIDI keyboard and the on-screen keys follow what you play.</p>
+    </section>
+
+    <div class="midi-bar">
+      <span class="midi-dot" id="midiDot"></span>
+      <span class="midi-txt" id="midiTxt">MIDI keyboard not connected.</span>
+      <button class="midi-btn" id="midiBtn">Connect</button>
+    </div>
+
+    <div class="console" style="margin-top:14px;">
+      <div class="ctl-row">
+        <div class="ctl-label">Show me a</div>
+        <div class="chips">
+          <button class="pick wide on" data-mode="scale">Scale</button>
+          <button class="pick wide" data-mode="chord">Chord</button>
+        </div>
+      </div>
+      <div class="ctl-row">
+        <div class="ctl-label">Root note</div>
+        <div class="chips" id="rootChips"></div>
+      </div>
+      <div class="ctl-row" id="typeRow">
+        <div class="ctl-label" id="typeLabel">Scale type</div>
+        <div class="chips" id="typeChips"></div>
+      </div>
+      <button class="play-btn" id="playLab">▶ &nbsp;Play It</button>
+      <div class="readout">
+        <div class="ro-lbl" id="roLbl">C Major Scale</div>
+        <div class="ro-notes" id="roNotes"></div>
+      </div>
+    </div>
+
+    <div class="piano-scroll">
+      <div class="piano"><div class="keys" id="keysLab"></div></div>
+    </div>
+    <div class="hint">← swipe the keyboard if it's cut off →</div>
+  </div>
+
+  <!-- ============ TRAINER ============ -->
+  <div class="panel" id="trainer">
+    <section>
+      <div class="eyebrow">Practice With Feedback</div>
+      <h2>The Trainer</h2>
+      <p class="lead">The Trainer calls out a chord or scale. Play it — on screen or on your MIDI keyboard — and it tells you instantly if you got it right. Green = correct, red = wrong note.</p>
+    </section>
+
+    <div class="midi-bar">
+      <span class="midi-dot" id="midiDot2"></span>
+      <span class="midi-txt" id="midiTxt2">MIDI keyboard not connected.</span>
+      <button class="midi-btn" id="midiBtn2">Connect</button>
+    </div>
+
+    <div class="console" style="margin-top:14px;">
+      <div class="ctl-row">
+        <div class="ctl-label">Drill</div>
+        <div class="chips">
+          <button class="pick wide on" data-drill="chord">Chords</button>
+          <button class="pick wide" data-drill="scale">Scales</button>
+        </div>
+      </div>
+      <div class="ctl-row" id="diffRow">
+        <div class="ctl-label">Difficulty</div>
+        <div class="chips">
+          <button class="pick wide on" data-diff="easy">Triads</button>
+          <button class="pick wide" data-diff="hard">+ 7th Chords</button>
+        </div>
+      </div>
+      <div class="ctl-row">
+        <div class="ctl-label">Helper</div>
+        <div class="chips">
+          <button class="pick wide on" data-hint="on">Show Keys</button>
+          <button class="pick wide" data-hint="off">Hide Keys</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="challenge" id="challenge" style="margin-top:14px;">
+      <div class="ch-cue">Play this:</div>
+      <div class="ch-target" id="chTarget">—</div>
+      <div class="ch-sub" id="chSub"></div>
+      <div class="ch-feedback idle" id="chFeedback">Press the lit keys</div>
+      <div class="ch-stats">
+        <div class="ch-stat"><b id="streak">0</b>Streak</div>
+        <div class="ch-stat"><b id="best">0</b>Best</div>
+      </div>
+      <div class="tr-btns">
+        <button class="tr-btn hear" id="hearBtn">▶ Hear It</button>
+        <button class="tr-btn" id="skipBtn">Skip ↦</button>
+      </div>
+    </div>
+
+    <div class="piano-scroll">
+      <div class="piano"><div class="keys" id="keysTrainer"></div></div>
+    </div>
+    <div class="hint" id="trainerHint">Tap the lit keys — or play them on your MIDI keyboard</div>
+  </div>
+
+  <!-- ============ KEY CHARTS ============ -->
+  <div class="panel" id="charts">
+    <section>
+      <div class="eyebrow">The Cheat Sheet</div>
+      <h2>Chords in Every Key</h2>
+      <p class="lead">Pick a key — get all 7 chords that belong to it, plus ready-made progressions. Tap any card to hear it.</p>
+    </section>
+
+    <div class="console" style="margin-top:16px;">
+      <div class="ctl-row">
+        <div class="ctl-label">Key root</div>
+        <div class="chips" id="chartRoots"></div>
+      </div>
+      <div class="ctl-row">
+        <div class="ctl-label">Key type</div>
+        <div class="chips">
+          <button class="pick wide on" data-ktype="major">Major</button>
+          <button class="pick wide" data-ktype="minor">Minor</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="eyebrow" style="margin-top:20px;">The 7 chords in this key</div>
+    <div class="chord-grid" id="chordGrid"></div>
+
+    <div class="eyebrow" style="margin-top:22px;">Progressions to try</div>
+    <div class="prog-list" id="progList"></div>
+  </div>
+
+  <!-- ============ HIP-HOP DEEP DIVE ============ -->
+  <div class="panel" id="deepdive">
+    <section>
+      <div class="eyebrow">Beyond The Basics</div>
+      <h2>Hip-Hop Deep Dive</h2>
+      <p class="lead">This is where theory becomes beats. Seven sections of the real stuff — progressions from actual records, sample flipping, the scales that make hip-hop sound like hip-hop, and how the greats think. Tap a section to open it. Everything orange is playable.</p>
+    </section>
+    <div id="ddContainer"></div>
+  </div>
+
+  <!-- ============ PROGRESS ============ -->
+  <div class="panel" id="progress">
+    <section>
+      <div class="eyebrow">Skill Tracker</div>
+      <h2>Practice Checklist</h2>
+      <p class="lead">Real skills — not just reading. Check one off only when you can do it without looking it up. Test yourself in the Trainer.</p>
+    </section>
+    <div id="checkContainer"></div>
+    <button class="reset" id="resetBtn">Reset all progress</button>
+  </div>
+
+  <footer>
+    <p class="gg">Gritty Grave</p>
+    <p>keep it on the desk next to your keyboard · practice &gt; theory</p>
+  </footer>
+</div>
+
+<div class="toast" id="toast">Saved</div>
+
+<script>
+/* ============================================================
+   THEORY ENGINE
+   ============================================================ */
+const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const SCALE_STEPS={major:[2,2,1,2,2,2,1],minor:[2,1,2,2,1,2,2]};
+const CHORD_INT={major:[0,4,7],minor:[0,3,7],dim:[0,3,6],
+  maj7:[0,4,7,11],min7:[0,3,7,10],dom7:[0,4,7,10]};
+const CHORD_LABEL={major:'Major',minor:'Minor',dim:'Diminished',
+  maj7:'Major 7',min7:'Minor 7',dom7:'Dominant 7'};
+const DIA={
+  major:{q:['maj7','min7','min7','maj7','dom7','min7','dim'],
+    r:['I','ii','iii','IV','V','vi','vii&deg;']},
+  minor:{q:['min7','dim','maj7','min7','min7','maj7','dom7'],
+    r:['i','ii&deg;','III','iv','v','VI','VII']}
+};
+const PROGS={
+  major:[
+    {r:'I – V – vi – IV',d:'The all-time pop/rap loop',idx:[0,4,5,3]},
+    {r:'ii – V – I',d:'The soul & jazz resolution',idx:[1,4,0]},
+    {r:'I – vi – IV – V',d:'Classic & smooth',idx:[0,5,3,4]},
+    {r:'vi – IV – I – V',d:'Emotional, sample-ready',idx:[5,3,0,4]}
+  ],
+  minor:[
+    {r:'i – VII – VI',d:'The dark hip-hop staple',idx:[0,6,5]},
+    {r:'i – VI – III – VII',d:'The emotional rap loop',idx:[0,5,2,6]},
+    {r:'i – iv – v',d:'Raw and minimal',idx:[0,3,4]},
+    {r:'i – VI – VII',d:'Tense build-up',idx:[0,5,6]}
+  ]
+};
+const noteName=pc=>NOTES[((pc%12)+12)%12];
+function buildScale(rootPc,type){
+  const out=[rootPc%12];let c=rootPc;
+  SCALE_STEPS[type].forEach(s=>{c+=s;out.push(c%12);});
+  return out; // 8 incl octave
+}
+function chordFromScale(scalePcs,degree,sevenths){
+  const idxs=sevenths?[0,2,4,6]:[0,2,4];
+  return idxs.map(i=>scalePcs[(degree+i)%7]);
+}
+// extra scales for the Deep Dive (interval offsets from root)
+const EXTRA_SCALES={
+  minPent:[0,3,5,7,10],
+  majPent:[0,2,4,7,9],
+  blues:[0,3,5,6,7,10],
+  dorian:[0,2,3,5,7,9,10]
+};
+function scalePcsFrom(rootPc,intervals){
+  return intervals.map(i=>(rootPc+i)%12);
+}
+function playScaleIntervals(rootPc,intervals){
+  const full=[...intervals,12].map(i=>rootPc+i);
+  const base=60;const seq=[];
+  full.forEach((v,i)=>{
+    let mm=base+((v-base)%12+12)%12;
+    if(i>0&&mm<=seq[i-1]) mm+=12;
+    seq.push(mm);
+  });
+  const t0=actx.currentTime+0.03;
+  seq.forEach((m,i)=>playMidi(m,t0+i*0.24,0.5));
+}
+
+/* ============================================================
+   AUDIO
+   ============================================================ */
+let actx=null,master=null;
+function initAudio(){
+  if(actx) {return;}
+  actx=new (window.AudioContext||window.webkitAudioContext)();
+  master=actx.createGain();master.gain.value=0.8;
+  const comp=actx.createDynamicsCompressor();
+  comp.threshold.value=-18;comp.ratio.value=4;
+  const conv=actx.createConvolver();
+  const len=actx.sampleRate*1.4;
+  const buf=actx.createBuffer(2,len,actx.sampleRate);
+  for(let ch=0;ch<2;ch++){
+    const d=buf.getChannelData(ch);
+    for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6);
+  }
+  conv.buffer=buf;
+  const rev=actx.createGain();rev.gain.value=0.15;
+  master.connect(comp);comp.connect(actx.destination);
+  conv.connect(rev);rev.connect(comp);
+  master.__rev=conv;
+}
+function resumeAudio(){ initAudio(); if(actx.state==='suspended') actx.resume(); }
+function midiFreq(m){return 440*Math.pow(2,(m-69)/12);}
+function playMidi(m,when,dur){
+  if(!actx) {return;}
+  const t=when??actx.currentTime;
+  const d=dur??1.3;
+  const o1=actx.createOscillator();o1.type='triangle';o1.frequency.value=midiFreq(m);
+  const o2=actx.createOscillator();o2.type='sine';o2.frequency.value=midiFreq(m);o2.detune.value=-7;
+  const f=actx.createBiquadFilter();f.type='lowpass';
+  f.frequency.setValueAtTime(2600,t);f.frequency.exponentialRampToValueAtTime(900,t+d);
+  const g=actx.createGain();
+  g.gain.setValueAtTime(0,t);
+  g.gain.linearRampToValueAtTime(0.24,t+0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+d);
+  o1.connect(f);o2.connect(f);f.connect(g);
+  g.connect(master);g.connect(master.__rev);
+  o1.start(t);o2.start(t);o1.stop(t+d+0.1);o2.stop(t+d+0.1);
+}
+
+/* ============================================================
+   KEYBOARD COMPONENT
+   ============================================================ */
+const KB_START=60,KB_END=84;
+function makeKeyboard(containerEl,onPress){
+  containerEl.innerHTML='';
+  let white=0;const layout=[];
+  for(let m=KB_START;m<=KB_END;m++){
+    const pc=m%12;
+    const black=[1,3,6,8,10].includes(pc);
+    if(black){layout.push({m,black:true,after:white-1});}
+    else{layout.push({m,black:false,wi:white});white++;}
+  }
+  const ww=100/white,bw=ww*0.62;
+  const keysByMidi={};
+  layout.forEach(k=>{
+    const el=document.createElement('div');
+    const nm=noteName(k.m%12);
+    if(k.black){
+      el.className='bkey';el.style.width=bw+'%';
+      el.style.left=((k.after+1)*ww-bw/2)+'%';
+      el.innerHTML=`<span class="kn">${nm}</span>`;
+    }else{
+      el.className='wkey';el.style.width=ww+'%';
+      el.style.left=(k.wi*ww)+'%';
+      el.innerHTML=`<span class="kn">${nm}</span>`;
+    }
+    el.dataset.midi=k.m;el.dataset.pc=k.m%12;
+    el.addEventListener('pointerdown',e=>{
+      e.preventDefault();
+      resumeAudio();playMidi(k.m);
+      el.classList.add('k-press');
+      setTimeout(()=>el.classList.remove('k-press'),150);
+      if(onPress) onPress(k.m);
+    });
+    keysByMidi[k.m]=el;
+    containerEl.appendChild(el);
+  });
+  function all(){return Object.values(keysByMidi);}
+  return {
+    keysByMidi,
+    clearAll(){all().forEach(k=>k.classList.remove('k-scale','k-chord','k-root','k-ghost','k-correct','k-wrong','lit'));},
+    clearFeedback(){all().forEach(k=>k.classList.remove('k-correct','k-wrong'));},
+    setHighlight(pcs,rootPc){
+      all().forEach(k=>{k.classList.remove('k-scale','k-chord','k-root');});
+      all().forEach(k=>{
+        const pc=+k.dataset.pc;
+        if(pcs.set.includes(pc)) k.classList.add(pcs.cls);
+        if(pc===rootPc) k.classList.add('k-root');
+      });
+    },
+    setGhost(pcs){
+      all().forEach(k=>k.classList.remove('k-ghost'));
+      all().forEach(k=>{ if(pcs.includes(+k.dataset.pc)) k.classList.add('k-ghost'); });
+    },
+    clearGhost(){all().forEach(k=>k.classList.remove('k-ghost'));},
+    markByPc(pc,cls){
+      all().forEach(k=>{ if(+k.dataset.pc===pc) k.classList.add(cls); });
+    },
+    unmarkByPc(pc){
+      all().forEach(k=>{ if(+k.dataset.pc===pc) k.classList.remove('k-correct','k-wrong'); });
+    },
+    mark(midi,cls){ if(keysByMidi[midi]) keysByMidi[midi].classList.add(cls); },
+    press(midi){
+      const k=keysByMidi[midi];
+      if(k){k.classList.add('k-press');setTimeout(()=>k.classList.remove('k-press'),180);}
+    },
+    flash(midi){
+      const k=keysByMidi[midi];
+      if(k){k.classList.add('lit');setTimeout(()=>k.classList.remove('lit'),320);}
+    },
+    flashPc(pc){
+      all().forEach(k=>{ if(+k.dataset.pc===pc){k.classList.add('lit');setTimeout(()=>k.classList.remove('lit'),320);} });
+    }
+  };
+}
+const KB={};
+
+/* ============================================================
+   MINI KEYBOARD (lessons)
+   ============================================================ */
+function miniKeyboard(pcs,rootPc){
+  const whites=[60,62,64,65,67,69,71,72];
+  const blacks=[{m:61,a:0},{m:63,a:1},{m:66,a:3},{m:68,a:4},{m:70,a:5}];
+  let h='<div class="mini-piano"><div class="mini-keys">';
+  whites.forEach((m,i)=>{
+    const pc=m%12;
+    const cls=pc===rootPc?'mk-root':(pcs.includes(pc)?'mk-on':'');
+    h+=`<div class="mk-w ${cls}" style="left:${i*12.5}%"><span>${noteName(pc)}</span></div>`;
+  });
+  blacks.forEach(b=>{
+    const pc=b.m%12;
+    const cls=pc===rootPc?'mk-root':(pcs.includes(pc)?'mk-on':'');
+    h+=`<div class="mk-b ${cls}" style="left:${(b.a+1)*12.5-4}%"></div>`;
+  });
+  h+='</div></div>';
+  return h;
+}
+
+/* ============================================================
+   MIDI
+   ============================================================ */
+let midiAccess=null,midiState='idle';
+const heldMidi=new Set();
+function setMidiStatus(st,detail){
+  midiState=st;
+  let txt='',dotCls='';
+  if(st==='connected'){txt=`<b>Connected:</b> ${detail||'MIDI keyboard'}`;dotCls='on';}
+  else if(st==='unsupported'){txt='Web MIDI not supported here. Open this file in <b>Chrome</b> on a computer.';dotCls='err';}
+  else if(st==='blocked'){txt='MIDI was blocked. Download this file and open it in <b>Chrome</b> on your laptop.';dotCls='err';}
+  else if(st==='waiting'){txt='No MIDI device found yet — plug one in, then it connects automatically.';dotCls='';}
+  else{txt='MIDI keyboard not connected.';dotCls='';}
+  ['midi','midi2'].forEach(p=>{
+    const t=document.getElementById(p==='midi'?'midiTxt':'midiTxt2');
+    const d=document.getElementById(p==='midi'?'midiDot':'midiDot2');
+    const b=document.getElementById(p==='midi'?'midiBtn':'midiBtn2');
+    if(t) t.innerHTML=txt;
+    if(d){d.className='midi-dot '+dotCls;}
+    if(b) b.textContent=st==='connected'?'Connected':'Connect';
+  });
+}
+async function connectMIDI(){
+  if(!navigator.requestMIDIAccess){setMidiStatus('unsupported');return;}
+  try{
+    midiAccess=await navigator.requestMIDIAccess();
+    bindMidiInputs();
+    midiAccess.onstatechange=bindMidiInputs;
+  }catch(e){
+    setMidiStatus('blocked');
+  }
+}
+function bindMidiInputs(){
+  if(!midiAccess) {return;}
+  let count=0,name='';
+  for(const input of midiAccess.inputs.values()){
+    input.onmidimessage=handleMidiMsg;
+    count++;name=input.name||'MIDI keyboard';
+  }
+  if(count>0) setMidiStatus('connected',count>1?count+' devices':name);
+  else setMidiStatus('waiting');
+}
+function handleMidiMsg(msg){
+  const [status,note,vel]=msg.data;
+  const cmd=status>>4;
+  if(cmd===9&&vel>0) midiNoteOn(note);
+  else if(cmd===8||(cmd===9&&vel===0)) midiNoteOff(note);
+}
+function activeKB(){
+  if(currentTab==='trainer') {return KB.trainer;}
+  if(currentTab==='lab') {return KB.lab;}
+  return null;
+}
+function midiNoteOn(note){
+  resumeAudio();playMidi(note);
+  heldMidi.add(note);
+  const kb=activeKB();
+  if(kb) kb.press(note);
+  if(currentTab==='trainer') trainerInput(note,true);
+}
+function midiNoteOff(note){
+  heldMidi.delete(note);
+  if(currentTab==='trainer') trainerInput(note,false);
+}
+
+/* ============================================================
+   STATE + PERSISTENCE
+   ============================================================ */
+let currentTab='lessons';
+let state={mode:'scale',root:0,type:'major',
+  chartRoot:0,chartType:'major',
+  done:{},best:0};
+async function loadProgress(){
+  try{
+    const r=await window.storage.get('grittygrave-progress');
+    if(r&&r.value){
+      const o=JSON.parse(r.value);
+      state.done=o.done||{};
+      state.best=o.best||0;
+    }
+  }catch(e){/* nothing saved yet */}
+}
+async function saveProgress(){
+  try{await window.storage.set('grittygrave-progress',JSON.stringify({done:state.done,best:state.best}));}
+  catch(e){console.warn('save failed',e);}
+}
+
+/* ============================================================
+   LESSON CONTENT
+   ============================================================ */
+const PHASES=[
+  {name:'Phase 1 — Foundations',sub:'The raw material. Don\u2019t skip these.',lessons:[
+    {t:'The Keyboard, Half Steps & Whole Steps',body:`
+      <p>Look at any keyboard. There are <strong>white keys</strong> and <strong>black keys</strong> — and only <strong>12 different notes</strong> exist before they repeat.</p>
+      <p>A <span class="g">half step</span> = moving to the <strong>very next key</strong>, any color, no skipping. A <span class="g">whole step</span> = <strong>skip one key</strong> and land on the next.</p>
+      <p>Example: C up to C# is a half step (right next door). C up to D is a whole step (you skipped C#).</p>
+      <div class="note-box"><b>Why it matters:</b> every scale and chord is just a recipe of half and whole steps. Learn this once and the rest is plug-and-play.</div>
+      <p>Two spots have no black key between them — <strong>E&ndash;F</strong> and <strong>B&ndash;C</strong>. Those white pairs are already half steps.</p>`},
+    {t:'The Major Scale',body:`
+      <p>A scale is a team of notes that sound good together. The <strong>major scale</strong> is the bright, happy one.</p>
+      <p>Every major scale follows the same step pattern, wherever you start:</p>
+      <div class="formula"><span class="step w">W</span><span class="step w">W</span><span class="step h">H</span><span class="step w">W</span><span class="step w">W</span><span class="step w">W</span><span class="step h">H</span></div>
+      <p>Start on C and follow it: C&rarr;D&rarr;E&rarr;F&rarr;G&rarr;A&rarr;B&rarr;C — that's <span class="g">C major</span>, all white keys. Here it is on the keyboard:</p>
+      <p>Hear it: <span class="chip" data-play="scale|0|major">C major</span> &nbsp; or another root: <span class="chip" data-play="scale|7|major">G major</span></p>
+      <div class="note-box"><b>One key = two names.</b> A# and Bb are the same key. Don't let the spelling confuse you — it's one sound.</div>`,
+      mini:{pcs:[0,2,4,5,7,9,11],root:0}},
+    {t:'The Minor Scale',body:`
+      <p>The <strong>minor scale</strong> is the dark, emotional one — which is exactly why hip-hop lives here.</p>
+      <p>The natural minor pattern is:</p>
+      <div class="formula"><span class="step w">W</span><span class="step h">H</span><span class="step w">W</span><span class="step w">W</span><span class="step h">H</span><span class="step w">W</span><span class="step w">W</span></div>
+      <p>Start on A and follow it: A&rarr;B&rarr;C&rarr;D&rarr;E&rarr;F&rarr;G&rarr;A — that's <span class="g">A minor</span>, also all white keys. See it lit up:</p>
+      <p>Hear it: <span class="chip" data-play="scale|9|minor">A minor</span> &nbsp; vs <span class="chip" data-play="scale|0|minor">C minor</span></p>
+      <div class="note-box"><b>Producer note:</b> when in doubt, write in minor. Most trap, drill, boom-bap and R&amp;B beats sit in a minor key.</div>`,
+      mini:{pcs:[9,11,0,2,4,5,7],root:9}},
+    {t:'Triads — Your First Chords',body:`
+      <p>A <strong>triad</strong> is a 3-note chord — the most basic chord there is.</p>
+      <p>The trick: <strong>build a chord by stacking notes from a scale, skipping every other one.</strong> Pick a note, grab the one two above, then two above that — the <span class="g">1st, 3rd and 5th</span>.</p>
+      <p>In C major that's C + E + G — a C major triad:</p>
+      <p><span class="g">Major</span> bright: <span class="chip" data-play="chord|0|major">C maj</span> &nbsp; <span class="g">Minor</span> dark: <span class="chip" data-play="chord|0|minor">C min</span> &nbsp; <span class="g">Diminished</span> tense: <span class="chip" data-play="chord|0|dim">C dim</span></p>
+      <div class="note-box"><b>The big secret:</b> major and minor differ by just <b>one note moving one half step</b>. That middle note is the whole mood of the chord.</div>`,
+      mini:{pcs:[0,4,7],root:0}},
+    {t:'Chords That Live in a Scale',body:`
+      <p>Every scale automatically produces <strong>7 chords</strong> — one on each note — and they always follow the same pattern.</p>
+      <p><strong>In any major key:</strong></p>
+      <p class="g">Major · minor · minor · Major · Major · minor · diminished</p>
+      <p><strong>In any minor key:</strong></p>
+      <p class="g">minor · diminished · Major · minor · minor · Major · Major</p>
+      <div class="note-box"><b>This is the cheat code.</b> Learn the pattern once and you know the chords for all 24 keys. The <b>Key Charts</b> tab lays it out for any key.</div>`},
+    {t:'7th Chords — The Hip-Hop Upgrade',body:`
+      <p>Triads are 3 notes. Add a 4th — the <strong>7th</strong> — and the chord gets richer, smoother, more soulful. This is the sound of sampled hip-hop and R&amp;B.</p>
+      <p><span class="g">Major 7</span> warm &amp; lush: <span class="chip" data-play="chord|0|maj7">C maj7</span><br>
+      <span class="g">Minor 7</span> smooth, the boom-bap backbone: <span class="chip" data-play="chord|9|min7">A min7</span><br>
+      <span class="g">Dominant 7</span> tense &amp; funky: <span class="chip" data-play="chord|7|dom7">G dom7</span></p>
+      <div class="note-box"><b>Real talk:</b> almost every chord in a soul sample is a 7th chord. If your beat sounds thin or "MIDI," try 7th chords.</div>`},
+    {t:'Chord Progressions & Roman Numerals',body:`
+      <p>A <strong>chord progression</strong> is a sequence of chords played in a loop — that sequence is the emotion of your beat.</p>
+      <p>Producers name chords by <strong>number</strong>, not letter, so a progression works in any key. Roman numerals: <span class="g">uppercase = major, lowercase = minor.</span></p>
+      <p>The famous minor one is <strong>i &ndash; VII &ndash; VI</strong>: your home minor chord, then two major chords below it. That loop is in thousands of rap beats.</p>
+      <div class="note-box"><b>Do this now:</b> open <b>Key Charts</b>, pick a minor key, tap the progression cards. That's a beat foundation in two taps.</div>`}
+  ]},
+  {name:'Phase 2 — Application',sub:'Turning theory into a sound that bangs.',lessons:[
+    {t:'Inversions — Smooth Movement',body:`
+      <p>An <strong>inversion</strong> is the same chord with a different note on the bottom. C major (C-E-G) flips to E-G-C or G-C-E — same notes, reordered.</p>
+      <p>Why care? When you change chords, inversions let them <strong>flow into each other</strong> with tiny movements instead of jumping your whole hand. That's the smooth, soulful sound.</p>
+      <div class="note-box"><b>Producer note:</b> every "buttery" chord loop uses inversions to keep notes close together. Top-3 most useful skill on this list.</div>`},
+    {t:'Voicings — How to Spread a Chord',body:`
+      <p>A <strong>voicing</strong> is how you arrange a chord across your hands. Beginners bunch all notes together — that sounds cramped.</p>
+      <p>Pros split it: <strong>bass note in the left hand</strong>, the rest <strong>spread in the right</strong>. Same chord, but now it sounds wide and finished.</p>
+      <p>Try dropping one note an octave, or removing a note. Less is often more — a 3-note voicing with space beats a cluttered grab.</p>`},
+    {t:'Rhythm & Playing in the Pocket',body:`
+      <p>Right chords with stiff timing still sound amateur. Hip-hop is <strong>rhythm-first</strong>.</p>
+      <p>"In the pocket" means playing chords <strong>slightly behind the beat</strong> — relaxed, with a touch of swing. It's a feel, not a setting.</p>
+      <p>Practice: loop a drum beat, play one chord on different rhythms — downbeat, offbeat, syncopated. Hear how placement changes the vibe.</p>
+      <div class="note-box"><b>Tip:</b> don't quantize everything to a hard grid. A little human looseness gives chords groove.</div>`},
+    {t:'Basslines & How They Meet Chords',body:`
+      <p>Your 808 doesn't have to play the chord's root. That's the beginner default — breaking it creates movement.</p>
+      <p>Try the bass on the <strong>3rd or 5th</strong> of the chord instead. Or hold one bass note while chords change above it (a "pedal tone") — instant tension.</p>
+      <p>The bass note you pick <strong>redefines the chord's feel</strong>. Same chord, different bass = different emotion.</p>`},
+    {t:'Ear Training — The Real Superpower',body:`
+      <p>The most underrated skill: hearing a sample and figuring out the chords <strong>by ear</strong>. It makes you fast and independent.</p>
+      <p>Start small. Daily: play two chords — did it go up or down? Major or minor? Then hunt for a chord from a song you love.</p>
+      <div class="note-box"><b>5 minutes a day</b> beats an hour once a week. The Trainer tab is built for exactly this — use it.</div>`}
+  ]},
+  {name:'Phase 3 — Color & Craft',sub:'The advanced moves that make people ask "how\u2019d you do that?"',lessons:[
+    {t:'Borrowed Chords & Modal Mixture',body:`
+      <p>Once progressions feel solid, this adds the unexpected "where did that come from?" chord.</p>
+      <p><strong>Borrowing</strong> means pulling a chord from a <em>different</em> scale into your progression for one moment of color — usually swapping in a chord from the parallel major/minor.</p>
+      <p>It works because it's a brief surprise that still resolves home. Kanye, Madlib and Alchemist live here.</p>
+      <div class="note-box"><b>Easy entry:</b> in a minor key, borrow a major chord where a minor one "should" be. That lift is a signature soul move.</div>`},
+    {t:'The Circle of Fifths',body:`
+      <p>The <strong>circle of fifths</strong> is a map of all 12 keys arranged so <strong>neighboring keys are closely related</strong> — they share most of their notes.</p>
+      <p>It shows which keys and chords sound good next to each other, makes transposing a sample painless, and helps you change key smoothly.</p>
+      <p>You don't need it memorized cold — just know it as a reference for "what's a safe move from here?"</p>`},
+    {t:'Melody & Topline Writing',body:`
+      <p>Chords are the backdrop — the <strong>melody</strong> is what people hum. It's a separate skill worth real practice.</p>
+      <p>Safe rule: build your melody from <strong>the same scale</strong> as your chords. For extra-catchy, lean on the <strong>pentatonic scale</strong> (5-note version) — almost impossible to hit a wrong note.</p>
+      <p>Aim melody notes at a <strong>chord tone</strong> (1, 3, 5 or 7) on strong beats — that's what makes a melody feel locked in.</p>
+      <div class="note-box"><b>Final word:</b> theory is a toolbox, not a rulebook. Learn the rules so you know exactly what you're breaking — that's producing.</div>`}
+  ]}
+];
+const CHECKLIST=[
+  {phase:'Phase 1 — Foundations',items:[
+    'I can point out a half step and a whole step anywhere on the keyboard',
+    'I can build a major scale starting from any note',
+    'I can build a natural minor scale starting from any note',
+    'I can build major, minor and diminished triads from any root',
+    'I know the chord pattern inside a major and a minor key',
+    'I can build maj7, min7 and dom7 chords',
+    'I understand Roman numerals and can play a i\u2013VII\u2013VI progression'
+  ]},
+  {phase:'Phase 2 — Application',items:[
+    'I can play a chord in all of its inversions',
+    'I can voice a chord split between left and right hand',
+    'I can play a chord loop in the pocket over a drum beat',
+    'I can write a bassline that doesn\u2019t just follow the root note',
+    'I can hear two chords and tell if they\u2019re major or minor'
+  ]},
+  {phase:'Phase 3 — Color & Craft',items:[
+    'I have used a borrowed chord in a progression',
+    'I can use the circle of fifths to transpose a progression',
+    'I can write a melody that locks in with my chord progression'
+  ]}
+];
+
+/* ============================================================
+   RENDER — LESSONS
+   ============================================================ */
+const CHEV='<svg class="lchev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>';
+const CHECK='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#11150a" stroke-width="3.5"><path d="M5 13l4 4L19 7"/></svg>';
+function renderLessons(){
+  const c=document.getElementById('lessonContainer');
+  let n=0;
+  PHASES.forEach(ph=>{
+    const head=document.createElement('div');
+    head.innerHTML=`<div class="phase-head">
+      <span class="phase-num">${ph.name.split('—')[0].trim()}</span>
+      <div><h3>${ph.name.split('—')[1].trim()}</h3><div class="sub">${ph.sub}</div></div></div>`;
+    c.appendChild(head);
+    ph.lessons.forEach(les=>{
+      n++;const id='L'+n;const done=!!state.done[id];
+      const el=document.createElement('div');
+      el.className='lesson'+(done?' done':'');
+      const miniHTML=les.mini?miniKeyboard(les.mini.pcs,les.mini.root):'';
+      el.innerHTML=`
+        <div class="lhead">
+          <span class="lnum">${String(n).padStart(2,'0')}</span>
+          <span class="ltitle">${les.t}</span>${CHEV}
+        </div>
+        <div class="lbody"><div class="lbody-inner">
+          ${les.body}${miniHTML}
+          <div class="mark"><span class="box">${CHECK}</span><span>Mark this lesson done</span></div>
+        </div></div>`;
+      el.querySelector('.lhead').addEventListener('click',()=>{
+        const open=el.classList.toggle('open');
+        const body=el.querySelector('.lbody');
+        body.style.maxHeight=open?body.scrollHeight+'px':'0';
+      });
+      el.querySelector('.mark').addEventListener('click',e=>{
+        e.stopPropagation();
+        el.classList.toggle('done');
+        state.done[id]=el.classList.contains('done');
+        saveProgress();syncProgress();
+        toast(state.done[id]?'Lesson done':'Marked undone');
+      });
+      c.appendChild(el);
+    });
+  });
+  c.querySelectorAll('.chip').forEach(chip=>{
+    chip.addEventListener('click',e=>{
+      e.stopPropagation();resumeAudio();
+      const [kind,root,type]=chip.dataset.play.split('|');
+      if(kind==='scale') playScale(buildScale(+root,type));
+      else playChord(CHORD_INT[type].map(i=>+root+i));
+    });
+  });
+}
+
+/* ============================================================
+   PLAYBACK
+   ============================================================ */
+function playScale(pcs){
+  const base=60;const seq=[];
+  pcs.forEach((pc,i)=>{
+    let mm=base+((pc-base)%12+12)%12;
+    if(i>0&&mm<=seq[i-1]) mm+=12;
+    seq.push(mm);
+  });
+  const t0=actx.currentTime+0.03;
+  seq.forEach((m,i)=>{
+    playMidi(m,t0+i*0.26,0.5);
+    setTimeout(()=>{const kb=activeKB();if(kb)kb.flash(m);},i*260+30);
+  });
+}
+function playChord(semis){
+  const base=60;const t0=actx.currentTime+0.03;
+  semis.forEach((v,i)=>{
+    let m=base+(((v-base)%12)+12)%12;
+    playMidi(m,t0+i*0.045,1.6);
+  });
+}
+// progression: array of {root,type}; plays each chord in sequence
+function playProgression(chords){
+  const base=60;
+  chords.forEach((ch,step)=>{
+    const ints=CHORD_INT[ch.type]||CHORD_INT.minor;
+    const t0=actx.currentTime+0.05+step*0.66;
+    ints.forEach((iv,j)=>{
+      let m=base+((((ch.root+iv)-base)%12)+12)%12;
+      playMidi(m,t0+j*0.04,1.1);
+    });
+  });
+}
+// one global handler for every .chip with data-play, anywhere in the page
+function wireChips(scopeEl){
+  (scopeEl||document).querySelectorAll('.chip[data-play]').forEach(chip=>{
+    if(chip.dataset.wired) {return;}
+    chip.dataset.wired='1';
+    chip.addEventListener('click',e=>{
+      e.stopPropagation();resumeAudio();
+      const parts=chip.dataset.play.split('|');
+      const kind=parts[0];
+      if(kind==='scale'){
+        playScale(buildScale(+parts[1],parts[2]));
+      }else if(kind==='chord'){
+        playChord(CHORD_INT[parts[2]].map(i=>+parts[1]+i));
+      }else if(kind==='prog'){
+        const roots=parts[1].split(',').map(Number);
+        const types=parts[2].split(',');
+        playProgression(roots.map((r,i)=>({root:r,type:types[i]||types[0]})));
+      }else if(kind==='iscale'){
+        playScaleIntervals(+parts[1],EXTRA_SCALES[parts[2]]||EXTRA_SCALES.minPent);
+      }
+    });
+  });
+}
+
+/* ============================================================
+   PIANO LAB
+   ============================================================ */
+function renderRootChips(id,current,cb){
+  const c=document.getElementById(id);c.innerHTML='';
+  NOTES.forEach((nm,pc)=>{
+    const b=document.createElement('button');
+    b.className='pick'+(pc===current?' on':'');
+    b.textContent=nm;
+    b.addEventListener('click',()=>{
+      c.querySelectorAll('.pick').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');cb(pc);
+    });
+    c.appendChild(b);
+  });
+}
+function renderTypeChips(){
+  const c=document.getElementById('typeChips');c.innerHTML='';
+  const types=state.mode==='scale'
+    ?[['major','Major'],['minor','Minor']]
+    :[['major','Major'],['minor','Minor'],['dim','Dim'],['maj7','Maj 7'],['min7','Min 7'],['dom7','Dom 7']];
+  if(!types.find(t=>t[0]===state.type)) state.type=types[0][0];
+  types.forEach(([val,lbl])=>{
+    const b=document.createElement('button');
+    b.className='pick'+(val===state.type?' on':'');
+    b.textContent=lbl;
+    b.addEventListener('click',()=>{
+      c.querySelectorAll('.pick').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');state.type=val;updateLab();
+    });
+    c.appendChild(b);
+  });
+  document.getElementById('typeLabel').textContent=state.mode==='scale'?'Scale type':'Chord type';
+}
+function updateLab(){
+  KB.lab.clearAll();
+  const rootPc=state.root;let label,degrees;
+  if(state.mode==='scale'){
+    const sc=buildScale(rootPc,state.type);
+    KB.lab.setHighlight({set:[...new Set(sc)],cls:'k-scale'},rootPc);
+    label=`${noteName(rootPc)} ${state.type==='major'?'Major':'Minor'} Scale`;
+    degrees=sc.slice(0,7).map((pc,i)=>({pc,deg:['1','2','3','4','5','6','7'][i]}));
+  }else{
+    const ints=CHORD_INT[state.type];
+    KB.lab.setHighlight({set:[...new Set(ints.map(i=>(rootPc+i)%12))],cls:'k-chord'},rootPc);
+    label=`${noteName(rootPc)} ${CHORD_LABEL[state.type]}`;
+    const dn=state.type.includes('7')?['1','3','5','7']:['1','3','5'];
+    degrees=ints.map((i,idx)=>({pc:(rootPc+i)%12,deg:dn[idx]}));
+  }
+  document.getElementById('roLbl').textContent=label;
+  const ro=document.getElementById('roNotes');ro.innerHTML='';
+  degrees.forEach(d=>{
+    const s=document.createElement('span');
+    s.className='ro-note'+(d.pc===rootPc&&d.deg==='1'?' root':'');
+    s.innerHTML=`${noteName(d.pc)}<span class="ro-deg">${d.deg}</span>`;
+    ro.appendChild(s);
+  });
+}
+function playLab(){
+  resumeAudio();
+  if(state.mode==='scale') playScale(buildScale(state.root,state.type));
+  else playChord(CHORD_INT[state.type].map(i=>state.root+i));
+}
+
+/* ============================================================
+   TRAINER
+   ============================================================ */
+let trainer={drill:'chord',diff:'easy',hint:true,
+  targetPcs:[],targetSeq:[],seqPos:0,label:'',sub:'',
+  sel:new Set(),streak:0,solved:false,playSemis:[]};
+function randPc(){return Math.floor(Math.random()*12);}
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function newChallenge(){
+  const tr=trainer;
+  tr.sel.clear();tr.seqPos=0;tr.solved=false;
+  KB.trainer.clearAll();
+  if(tr.drill==='chord'){
+    const root=randPc();
+    const types=tr.diff==='easy'?['major','minor','dim']:['major','minor','dim','maj7','min7','dom7'];
+    const type=pick(types);
+    const ints=CHORD_INT[type];
+    tr.targetPcs=[...new Set(ints.map(i=>(root+i)%12))];
+    tr.playSemis=ints.map(i=>root+i);
+    tr.label=`${noteName(root)} ${CHORD_LABEL[type]}`;
+    tr.sub=ints.length+' notes — play them together';
+  }else{
+    const root=randPc();
+    const type=pick(['major','minor']);
+    const sc=buildScale(root,type);
+    tr.targetSeq=sc.slice();
+    tr.targetPcs=[...new Set(sc)];
+    tr.playSemis=null;tr.scaleRoot=root;tr.scaleType=type;
+    tr.label=`${noteName(root)} ${type==='major'?'Major':'Minor'} Scale`;
+    tr.sub='8 notes — play them one at a time, going up';
+  }
+  document.getElementById('chTarget').textContent=tr.label;
+  document.getElementById('chSub').textContent=tr.sub;
+  setFeedback('idle',tr.hint?'Press the lit keys':'Figure it out — keys hidden');
+  if(tr.hint) KB.trainer.setGhost(tr.targetPcs);
+  else KB.trainer.clearGhost();
+}
+function setFeedback(cls,msg){
+  const f=document.getElementById('chFeedback');
+  f.className='ch-feedback '+cls;f.textContent=msg;
+}
+function trainerInput(midi,isOn){
+  const tr=trainer;
+  if(tr.solved) {return;}
+  if(tr.drill==='chord'){
+    if(isOn) tr.sel.add(midi); else tr.sel.delete(midi);
+    evalChord();
+  }else{
+    if(isOn) scaleStep(midi);
+  }
+}
+function evalChord(){
+  const tr=trainer;
+  KB.trainer.clearFeedback();
+  const heldPcs=[...new Set([...tr.sel].map(m=>m%12))];
+  heldPcs.forEach(pc=>{
+    const ok=tr.targetPcs.includes(pc);
+    [...tr.sel].filter(m=>m%12===pc).forEach(m=>KB.trainer.mark(m,ok?'k-correct':'k-wrong'));
+  });
+  const heldSet=new Set(heldPcs);
+  const exact=heldSet.size===tr.targetPcs.length&&tr.targetPcs.every(x=>heldSet.has(x));
+  if(exact){trainerWin();}
+  else if(heldPcs.some(pc=>!tr.targetPcs.includes(pc))){
+    setFeedback('bad','Wrong note — green ones are right');
+  }else if(heldPcs.length>0){
+    setFeedback('idle',`${heldPcs.length} of ${tr.targetPcs.length} — keep going`);
+  }else{
+    setFeedback('idle',tr.hint?'Press the lit keys':'Figure it out — keys hidden');
+  }
+}
+function scaleStep(midi){
+  const tr=trainer;
+  const pc=midi%12;
+  const expected=tr.targetSeq[tr.seqPos];
+  if(pc===expected){
+    KB.trainer.markByPc(pc,'k-correct');
+    tr.seqPos++;
+    if(tr.seqPos>=tr.targetSeq.length){trainerWin();}
+    else setFeedback('idle',`Note ${tr.seqPos} of ${tr.targetSeq.length} — keep climbing`);
+  }else{
+    KB.trainer.flashPc(pc);
+    KB.trainer.markByPc(pc,'k-wrong');
+    setTimeout(()=>KB.trainer.unmarkByPc(pc),350);
+    setFeedback('bad','Wrong note — start the scale again');
+    tr.seqPos=0;
+    KB.trainer.clearFeedback();
+    if(tr.hint) KB.trainer.setGhost(tr.targetPcs);
+  }
+}
+function trainerWin(){
+  const tr=trainer;
+  tr.solved=true;tr.streak++;
+  if(tr.streak>state.best){state.best=tr.streak;saveProgress();}
+  document.getElementById('streak').textContent=tr.streak;
+  document.getElementById('best').textContent=state.best;
+  setFeedback('ok','✓ Correct!');
+  const ch=document.getElementById('challenge');
+  ch.classList.add('win');setTimeout(()=>ch.classList.remove('win'),650);
+  toast('Correct! Streak '+tr.streak);
+  if(tr.playSemis) {resumeAudio();playChord(tr.playSemis);}
+  setTimeout(newChallenge,1300);
+}
+function hearTarget(){
+  resumeAudio();const tr=trainer;
+  if(tr.drill==='chord') playChord(tr.playSemis);
+  else playScale(buildScale(tr.scaleRoot,tr.scaleType));
+}
+function skipChallenge(){
+  trainer.streak=0;
+  document.getElementById('streak').textContent='0';
+  newChallenge();
+}
+function trainerKeyPress(midi){
+  const tr=trainer;
+  if(tr.solved) {return;}
+  if(tr.drill==='chord'){
+    if(tr.sel.has(midi)) tr.sel.delete(midi); else tr.sel.add(midi);
+    evalChord();
+  }else{
+    scaleStep(midi);
+  }
+}
+
+/* ============================================================
+   KEY CHARTS
+   ============================================================ */
+function renderKeyChart(){
+  const root=state.chartRoot,kt=state.chartType;
+  const scale=buildScale(root,kt);
+  const dia=DIA[kt];
+  const grid=document.getElementById('chordGrid');grid.innerHTML='';
+  for(let deg=0;deg<7;deg++){
+    const chordPcs=chordFromScale(scale,deg,true);
+    const rootName=noteName(scale[deg]);
+    const qual=dia.q[deg];
+    const sfx=qual==='maj7'?'maj7':qual==='min7'?'m7':qual==='dom7'?'7':qual==='dim'?'\u00b07':'';
+    const card=document.createElement('div');
+    card.className='chord-card';
+    card.innerHTML=`<div class="cc-roman">${dia.r[deg]}</div>
+      <div class="cc-name">${rootName}${sfx}</div>
+      <div class="cc-notes">${chordPcs.map(noteName).join(' ')}</div>
+      <div class="cc-qual">${CHORD_LABEL[qual]||qual}</div>`;
+    card.addEventListener('click',()=>{
+      resumeAudio();playChord(chordPcs.map(pc=>60+pc));
+    });
+    grid.appendChild(card);
+  }
+  const pl=document.getElementById('progList');pl.innerHTML='';
+  PROGS[kt].forEach(prog=>{
+    const card=document.createElement('div');
+    card.className='prog-card';
+    const names=prog.idx.map(i=>{
+      const q=dia.q[i];
+      const sfx=q==='maj7'?'maj7':q==='min7'?'m7':q==='dom7'?'7':q==='dim'?'\u00b07':'';
+      return noteName(scale[i])+sfx;
+    });
+    card.innerHTML=`<div class="prog-play">\u25B6</div>
+      <div class="prog-info">
+        <div class="prog-roman">${prog.r}</div>
+        <div class="prog-desc">${prog.d}</div>
+        <div class="prog-chords">${names.join('  \u2192  ')}</div>
+      </div>`;
+    card.addEventListener('click',()=>{
+      resumeAudio();
+      prog.idx.forEach((di,step)=>{
+        const cp=chordFromScale(scale,di,true);
+        const t0=actx.currentTime+0.05+step*0.62;
+        cp.forEach((pc,j)=>playMidi(60+pc,t0+j*0.04,1.0));
+      });
+    });
+    pl.appendChild(card);
+  });
+}
+
+/* ============================================================
+   CHECKLIST
+   ============================================================ */
+function renderChecklist(){
+  const c=document.getElementById('checkContainer');c.innerHTML='';
+  let n=0;
+  CHECKLIST.forEach(ph=>{
+    const wrap=document.createElement('div');
+    wrap.className='check-phase';
+    wrap.innerHTML=`<h3><span class="cp-dot"></span>${ph.phase}</h3>`;
+    ph.items.forEach(item=>{
+      n++;const id='C'+n;const done=!!state.done[id];
+      const el=document.createElement('div');
+      el.className='check-item'+(done?' done':'');
+      el.innerHTML=`<span class="ci-box">${CHECK}</span><span class="ci-text">${item}</span>`;
+      el.addEventListener('click',()=>{
+        el.classList.toggle('done');
+        state.done[id]=el.classList.contains('done');
+        saveProgress();syncProgress();
+        toast(state.done[id]?'Skill unlocked':'Marked undone');
+      });
+      wrap.appendChild(el);
+    });
+    c.appendChild(wrap);
+  });
+}
+function syncProgress(){
+  let total=0,done=0;
+  CHECKLIST.forEach(ph=>ph.items.forEach(()=>total++));
+  for(let i=1;i<=total;i++){if(state.done['C'+i])done++;}
+  const pct=total?Math.round(done/total*100):0;
+  document.getElementById('progfill').style.width=pct+'%';
+  document.getElementById('pct').textContent=pct+'%';
+}
+
+/* ============================================================
+   UI WIRING
+   ============================================================ */
+let toastTimer;
+function toast(msg,bad){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show'+(bad?' bad':'');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.className='toast'+(bad?' bad':''),1700);
+}
+document.querySelectorAll('nav button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+    btn.classList.add('on');
+    currentTab=btn.dataset.tab;
+    document.getElementById(currentTab).classList.add('on');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+document.querySelectorAll('[data-mode]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('[data-mode]').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');state.mode=btn.dataset.mode;
+    renderTypeChips();updateLab();
+  });
+});
+document.querySelectorAll('[data-ktype]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('[data-ktype]').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');state.chartType=btn.dataset.ktype;renderKeyChart();
+  });
+});
+document.querySelectorAll('[data-drill]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('[data-drill]').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');trainer.drill=btn.dataset.drill;
+    document.getElementById('diffRow').style.display=trainer.drill==='chord'?'':'none';
+    trainer.streak=0;document.getElementById('streak').textContent='0';
+    newChallenge();
+  });
+});
+document.querySelectorAll('[data-diff]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('[data-diff]').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');trainer.diff=btn.dataset.diff;newChallenge();
+  });
+});
+document.querySelectorAll('[data-hint]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('[data-hint]').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');trainer.hint=btn.dataset.hint==='on';
+    if(trainer.hint) KB.trainer.setGhost(trainer.targetPcs);
+    else KB.trainer.clearGhost();
+  });
+});
+document.getElementById('playLab').addEventListener('click',playLab);
+document.getElementById('hearBtn').addEventListener('click',hearTarget);
+document.getElementById('skipBtn').addEventListener('click',skipChallenge);
+document.getElementById('midiBtn').addEventListener('click',connectMIDI);
+document.getElementById('midiBtn2').addEventListener('click',connectMIDI);
+document.getElementById('resetBtn').addEventListener('click',()=>{
+  if(confirm('Reset all lesson and checklist progress?')){
+    state.done={};state.best=0;trainer.streak=0;saveProgress();
+    document.querySelectorAll('.lesson').forEach(l=>l.classList.remove('done'));
+    document.querySelectorAll('.check-item').forEach(l=>l.classList.remove('done'));
+    document.getElementById('streak').textContent='0';
+    document.getElementById('best').textContent='0';
+    syncProgress();toast('Progress reset');
+  }
+});
+
+/* ============================================================
+   HIP-HOP DEEP DIVE CONTENT
+   ============================================================ */
+/* note shortcuts for readability: C0 Cs1 D2 Ds3 E4 F5 Fs6 G7 Gs8 A9 As10 B11 */
+const DEEP_DIVE=[
+  {icon:'\uD83D\uDCD3',title:'Hip-Hop Chord Bible',tag:'Real progressions, real records',
+   body:`
+    <p>Theory means nothing until you hear it in a beat you know. These are the progressions that built hip-hop. Tap each one — they're labeled by Roman numeral so you can move them to any key.</p>
+    <p>Quick reminder: <span class="g">lowercase = minor chord, uppercase = major</span>. Most of these sit in a minor key because that's where hip-hop lives.</p>
+    <h4>The Core Four</h4>
+    <div class="beat-card">
+      <div class="bc-top"><span class="bc-name">i &ndash; VII &ndash; VI</span><span class="bc-meta">A minor</span></div>
+      <div class="bc-desc">The dark staple. Home minor chord sliding down to two majors. Thousands of trap and drill beats live here.</div>
+      <div class="bc-play"><span class="chip" data-play="prog|9,7,5|min7,maj7,maj7">Am7 &rarr; Gmaj7 &rarr; Fmaj7</span></div>
+    </div>
+    <div class="beat-card">
+      <div class="bc-top"><span class="bc-name">i &ndash; VI &ndash; III &ndash; VII</span><span class="bc-meta">A minor</span></div>
+      <div class="bc-desc">The emotional rap loop. A full 4-chord cycle that feels cinematic and sad — perfect for storytelling beats.</div>
+      <div class="bc-play"><span class="chip" data-play="prog|9,5,0,7|min7,maj7,maj7,maj7">Am7 &rarr; Fmaj7 &rarr; Cmaj7 &rarr; Gmaj7</span></div>
+    </div>
+    <div class="beat-card">
+      <div class="bc-top"><span class="bc-name">ii &ndash; V &ndash; i</span><span class="bc-meta">A minor</span></div>
+      <div class="bc-desc">The soul/jazz resolution. That satisfying "coming home" sound — backbone of sample-based boom bap.</div>
+      <div class="bc-play"><span class="chip" data-play="prog|11,4,9|dim,dom7,min7">Bdim &rarr; E7 &rarr; Am7</span></div>
+    </div>
+    <div class="beat-card">
+      <div class="bc-top"><span class="bc-name">i &ndash; iv</span><span class="bc-meta">A minor</span></div>
+      <div class="bc-desc">Just two chords. Raw, hypnotic, minimal — the drill and lo-fi favorite. Sometimes less really is more.</div>
+      <div class="bc-play"><span class="chip" data-play="prog|9,2|min7,min7">Am7 &rarr; Dm7</span></div>
+    </div>
+    <h4>How to use them</h4>
+    <p>Pick one, loop it, and build drums and a melody on top. Once it feels natural, move the whole thing to a different key — that's the power of learning them by number, not by letter.</p>`},
+
+  {icon:'\uD83C\uDFB9',title:'Sample Flipping Guide',tag:'Find the key, match the chords',
+   body:`
+    <p>Flipping a sample is the heart of hip-hop production. The hard part is usually one question: <strong>what key is this sample in?</strong> Here's the workflow.</p>
+    <h4>Step 1 — Find the lowest steady note</h4>
+    <p>Loop the sample and hum along with the lowest note that feels like "home." That note is very likely your <span class="g">root</span>. Hunt for it on your keyboard until you match the pitch.</p>
+    <h4>Step 2 — Major or minor?</h4>
+    <p>Play a <span class="chip" data-play="chord|0|major">major chord</span> on that root, then a <span class="chip" data-play="chord|0|minor">minor chord</span>. Whichever one "agrees" with the sample tells you the key type. Most soul and old records are minor.</p>
+    <h4>Step 3 — Build around it</h4>
+    <p>Now that you know the key, the <strong>Key Charts</strong> tab gives you all 7 chords that will fit the sample. Any of them will sound "in key" layered under it.</p>
+    <h4>Step 4 — Pitch to fit</h4>
+    <p>If the sample clashes with the key you want, pitch the whole sample up or down in semitones until it lines up. Every 12 semitones = one full octave. This is also how you change a sample's vibe — pitching down = darker and grimier.</p>
+    <div class="note-box"><b>Pro move:</b> chop the sample, then play your own chords from the same key in the gaps. Now it's part sample, part you — that's a flip, not a loop.</div>`},
+
+  {icon:'\uD83D\uDD25',title:'Scales That Slap',tag:'Past major & minor',
+   body:`
+    <p>Major and minor get you started — but these three scales are what make hip-hop, soul and R&B actually sound like themselves.</p>
+    <h4>Minor Pentatonic</h4>
+    <p>The minor scale with the two "risky" notes removed — just 5 notes that <strong>always</strong> sound good. The #1 scale for melodies and beat hooks. Almost impossible to hit a wrong note.</p>
+    <p>Hear it: <span class="chip" data-play="iscale|9|minPent">A minor pentatonic</span></p>
+    MINI_minPent
+    <h4>Blues Scale</h4>
+    <p>Minor pentatonic plus one extra "blue note" that adds grit and tension. This is the sound of soul samples, dusty melodies, and anything that needs attitude.</p>
+    <p>Hear it: <span class="chip" data-play="iscale|9|blues">A blues scale</span></p>
+    MINI_blues
+    <h4>Dorian Mode</h4>
+    <p>A minor scale with one note raised — it sounds minor but slightly brighter and jazzier. The secret weapon of lo-fi, neo-soul, and producers like Dilla. Moody but hopeful.</p>
+    <p>Hear it: <span class="chip" data-play="iscale|9|dorian">A Dorian</span></p>
+    MINI_dorian
+    <div class="note-box"><b>Try this:</b> write a melody using only minor pentatonic over any minor progression from the Chord Bible. Instant hook.</div>`},
+
+  {icon:'\uD83C\uDF9B\uFE0F',title:'Pad Layout Guide',tag:'Set up your MPC for speed',
+   body:`
+    <p>Your MPC pads can be laid out so a scale or chord is right under your fingers — no wrong notes possible. Here's how to think about it.</p>
+    <h4>Chromatic vs Scale layout</h4>
+    <p>In <strong>Chromatic</strong> mode every pad is the next note up — like a keyboard spread across 16 pads. In a <strong>Scale / User</strong> layout you tell the MPC a key, and it only puts the "good" notes on the pads. For beginners, scale layout is a cheat code.</p>
+    <h4>The 16-pad scale trick</h4>
+    <p>Set your MPC to A minor and a scale layout — now all 16 pads play only notes from A minor. You physically cannot hit a wrong note. Tap pads at random and it sounds intentional.</p>
+    <p>This is what those keys look like on a keyboard — the lit ones are your "safe" notes:</p>
+    MINI_aminor
+    <h4>Chord-per-pad</h4>
+    <p>Advanced move: assign a whole chord to each pad. One pad = Am7, next pad = Fmaj7, and so on. Now you can play a full progression by tapping 3 or 4 pads — great for fast beat sketching.</p>
+    <div class="note-box"><b>Reminder:</b> the Piano Lab tab connects to your MIDI keyboard too — practice the shapes there, then move them to your pads.</div>`},
+
+  {icon:'\uD83D\uDD00',title:'Chord Substitutions',tag:'Swap chords for more color',
+   body:`
+    <p>A substitution is swapping one chord for a different chord that does a similar job but adds richer color. This is a huge part of why some beats sound "expensive."</p>
+    <h4>Triad &rarr; 7th chord</h4>
+    <p>The easiest sub of all. Anywhere you'd play a plain chord, play its 7th-chord version instead. Compare: <span class="chip" data-play="chord|9|minor">A minor</span> vs <span class="chip" data-play="chord|9|min7">A minor 7</span>. The 7th instantly sounds more soulful.</p>
+    <h4>Relative swap</h4>
+    <p>Every major chord has a "relative minor" hiding 3 half steps below it that shares most of its notes. Swap one for the other to shift the mood without breaking the progression. <span class="chip" data-play="chord|0|maj7">C maj7</span> &harr; <span class="chip" data-play="chord|9|min7">A min7</span> — nearly the same notes, different feeling.</p>
+    <h4>The borrowed chord</h4>
+    <p>Drop in a chord from outside the key for one moment of surprise, then resolve home. It's the "where did that come from?" move. Used carefully it's pure magic — used everywhere it's chaos.</p>
+    <div class="note-box"><b>Rule of thumb:</b> if a chord change sounds boring, try subbing in the 7th-chord version first. 90% of the time that fixes it.</div>`},
+
+  {icon:'\uD83C\uDFA7',title:'Famous Producer Styles',tag:'How the greats think',
+   body:`
+    <p>Four legends, four completely different approaches to chords. Tap the progressions to hear the kind of thing each is known for. These are <em>in the spirit of</em> their style — a starting point, not a copy.</p>
+    <div class="prod-card">
+      <div class="pc-name">J Dilla</div>
+      <div class="pc-vibe">Lush, jazzy 7th and 9th chords with loose, drunk timing. Warm Rhodes-style chords that feel hand-played and slightly off-grid. Dorian mode is all over his work.</div>
+      <div class="pc-lbl">Try this</div>
+      <div class="bc-play"><span class="chip" data-play="prog|2,7|min7,dom7">Dm7 &rarr; G7 (Dorian groove)</span></div>
+    </div>
+    <div class="prod-card">
+      <div class="pc-name">Kanye West</div>
+      <div class="pc-vibe">Soul samples pitched up, bold major-key moments, and dramatic chord lifts. Not afraid of triumphant, gospel-tinged progressions and borrowed chords for impact.</div>
+      <div class="pc-lbl">Try this</div>
+      <div class="bc-play"><span class="chip" data-play="prog|0,5,7|maj7,maj7,dom7">Cmaj7 &rarr; Fmaj7 &rarr; G7</span></div>
+    </div>
+    <div class="prod-card">
+      <div class="pc-name">Madlib</div>
+      <div class="pc-vibe">Obscure dusty samples, unusual chords, raw and unpolished. Loops that feel found, not built. Embraces "wrong" notes and tension that other producers would clean up.</div>
+      <div class="pc-lbl">Try this</div>
+      <div class="bc-play"><span class="chip" data-play="prog|9,8|min7,dom7">Am7 &rarr; G#7 (off-kilter sub)</span></div>
+    </div>
+    <div class="prod-card">
+      <div class="pc-name">Metro Boomin</div>
+      <div class="pc-vibe">Dark, cinematic minor keys. Simple two-chord loops or single eerie progressions with lots of space. Tension and atmosphere over busy chord movement.</div>
+      <div class="pc-lbl">Try this</div>
+      <div class="bc-play"><span class="chip" data-play="prog|9,5|minor,minor">Am &rarr; Fm (dark tension)</span></div>
+    </div>`},
+
+  {icon:'\uD83C\uDF21\uFE0F',title:'The Emotions Map',tag:'Pick a feeling, get the recipe',
+   body:`
+    <p>Beats are emotion first, theory second. This maps feelings to chord recipes. Tap a card to hear the vibe — then build your beat around it.</p>
+    <div class="mood-grid">
+      <div class="mood-card" data-play="prog|9,5|min7,maj7">
+        <div class="mc-name">Dark &amp; Eerie</div>
+        <div class="mc-recipe">minor 7 chords · slow</div>
+        <div class="mc-note">Minor key, lots of space, low and slow. Trap & drill territory.</div>
+      </div>
+      <div class="mood-card" data-play="prog|9,2,9|minor,minor,minor">
+        <div class="mc-name">Aggressive</div>
+        <div class="mc-recipe">plain minor triads · hard</div>
+        <div class="mc-note">Stripped, punchy minor chords. No softness — all attitude.</div>
+      </div>
+      <div class="mood-card" data-play="prog|0,9,5|maj7,min7,maj7">
+        <div class="mc-name">Smooth &amp; Soulful</div>
+        <div class="mc-recipe">maj7 + min7 mix</div>
+        <div class="mc-note">7th chords, relative swaps. R&B and neo-soul warmth.</div>
+      </div>
+      <div class="mood-card" data-play="prog|2,7|min7,dom7">
+        <div class="mc-name">Chill &amp; Hazy</div>
+        <div class="mc-recipe">Dorian · loose 7ths</div>
+        <div class="mc-note">Lo-fi haze. Jazzy 7ths, Dorian mode, relaxed timing.</div>
+      </div>
+      <div class="mood-card" data-play="prog|0,5,7|maj7,maj7,dom7">
+        <div class="mc-name">Triumphant</div>
+        <div class="mc-recipe">major 7 chords · rising</div>
+        <div class="mc-note">Major key, gospel lift. Big, victorious, head-up energy.</div>
+      </div>
+      <div class="mood-card" data-play="prog|0,9,5,7|maj7,min7,maj7,dom7">
+        <div class="mc-name">Romantic</div>
+        <div class="mc-recipe">full maj7/min7 cycle</div>
+        <div class="mc-note">Lush 4-chord loop. Tender, warm, late-night R&B.</div>
+      </div>
+    </div>
+    <div class="note-box"><b>How to use it:</b> pick the emotion your beat needs first, play the recipe, then add drums that match that energy. Emotion-first beats hit harder.</div>`}
+];
+
+function renderDeepDive(){
+  const c=document.getElementById('ddContainer');
+  // pre-render mini keyboards used inside section bodies
+  const minis={
+    minPent:miniKeyboard(scalePcsFrom(9,EXTRA_SCALES.minPent),9),
+    blues:miniKeyboard(scalePcsFrom(9,EXTRA_SCALES.blues),9),
+    dorian:miniKeyboard(scalePcsFrom(9,EXTRA_SCALES.dorian),9),
+    aminor:miniKeyboard([9,11,0,2,4,5,7],9)
+  };
+  DEEP_DIVE.forEach(sec=>{
+    let body=sec.body
+      .replace('MINI_minPent',minis.minPent)
+      .replace('MINI_blues',minis.blues)
+      .replace('MINI_dorian',minis.dorian)
+      .replace('MINI_aminor',minis.aminor);
+    const el=document.createElement('div');
+    el.className='dd-sec';
+    el.innerHTML=`
+      <div class="dd-head">
+        <span class="dd-icon">${sec.icon}</span>
+        <span class="dd-titles">
+          <span class="dd-title">${sec.title}</span>
+          <span class="dd-tag">${sec.tag}</span>
+        </span>${CHEV}
+      </div>
+      <div class="dd-body"><div class="dd-inner">${body}</div></div>`;
+    el.querySelector('.dd-head').addEventListener('click',()=>{
+      const open=el.classList.toggle('open');
+      const b=el.querySelector('.dd-body');
+      b.style.maxHeight=open?b.scrollHeight+'px':'0';
+    });
+    c.appendChild(el);
+  });
+  // mood cards play their progression
+  c.querySelectorAll('.mood-card[data-play]').forEach(card=>{
+    card.addEventListener('click',()=>{
+      resumeAudio();
+      const parts=card.dataset.play.split('|');
+      const roots=parts[1].split(',').map(Number);
+      const types=parts[2].split(',');
+      playProgression(roots.map((r,i)=>({root:r,type:types[i]||types[0]})));
+    });
+  });
+  wireChips(c);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+(async function init(){
+  await loadProgress();
+  renderLessons();
+  KB.lab=makeKeyboard(document.getElementById('keysLab'),null);
+  KB.trainer=makeKeyboard(document.getElementById('keysTrainer'),trainerKeyPress);
+  renderRootChips('rootChips',state.root,pc=>{state.root=pc;updateLab();});
+  renderTypeChips();updateLab();
+  renderRootChips('chartRoots',state.chartRoot,pc=>{state.chartRoot=pc;renderKeyChart();});
+  renderKeyChart();
+  renderDeepDive();
+  renderChecklist();
+  syncProgress();
+  document.getElementById('best').textContent=state.best;
+  newChallenge();
+  setMidiStatus('idle');
+  // try silent auto-connect (works if browser already granted)
+  if(navigator.requestMIDIAccess){
+    navigator.requestMIDIAccess().then(a=>{midiAccess=a;bindMidiInputs();a.onstatechange=bindMidiInputs;}).catch(()=>{});
+  }
+})();
+</script>
+</body>
+</html>
