@@ -167,9 +167,48 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
   @media(max-width:540px){.wrap{padding:0 12px 80px;}}
+
+  /* ===== SITE NAV ===== */
+  .site-nav{
+    position:sticky;top:0;z-index:100;
+    background:rgba(10,12,7,.92);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    padding:0 20px;
+  }
+  .nav-inner{
+    max-width:1080px;margin:0 auto;
+    display:flex;align-items:center;gap:6px;height:54px;
+  }
+  .nav-logo{
+    font-family:'Creepster',system-ui;font-size:22px;color:var(--green-bright);
+    letter-spacing:.03em;text-decoration:none;flex:none;margin-right:8px;
+    text-shadow:0 0 14px rgba(169,217,46,.4);
+  }
+  .nav-links{display:flex;gap:3px;flex:1;overflow-x:auto;}
+  .nav-links::-webkit-scrollbar{height:0;}
+  .nav-link{
+    font-family:'Anton',sans-serif;font-size:12px;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--muted);text-decoration:none;padding:8px 12px;border-radius:8px;
+    white-space:nowrap;transition:.15s;border:1px solid transparent;
+  }
+  .nav-link:hover{color:var(--ink);background:var(--panel-2);}
+  .nav-link.active{color:var(--green);border-color:var(--line);background:var(--panel);}
+
 </style>
 </head>
 <body>
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html">Gritty Grave</a>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+      <a class="nav-link" href="beats.html">Beats</a>
+      <a class="nav-link" href="gritty-grave-beat-challenge.html">Challenge</a>
+      <a class="nav-link" href="gritty-grave-piano-lab.html">Piano Lab</a>
+      <a class="nav-link active" href="gritty-grave-sample-chop.html">Sample Chop</a>
+    </div>
+  </div>
+</nav>
 <div class="wrap">
 
   <header>
