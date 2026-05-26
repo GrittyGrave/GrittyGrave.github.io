@@ -40,8 +40,9 @@
     overflow-x:hidden;
   }
   body::before{
-    content:"";position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.06;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.07;
+    background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEWFhYWDg4N3d3dtbW17e3t1dXWBgYGHh4t5eXlzc3OLi4ubm5uVlZWPj4+NjY19fX2JiYl/f39ra2uRkZGZmZlpaWmXl5dvb29xcXGTk5NnZ2c8TV1mAAAAG3RSTlNAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEB9VoGNAAAASElEQVR42u3BMQEAAADCoPVP7WsIoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeAMBxAABPQAAAABJRU5ErkJggg==");
+    background-repeat:repeat;background-size:100px 100px;mix-blend-mode:overlay;
   }
   ::selection{background:var(--green);color:#11150a;}
   .wrap{max-width:980px;margin:0 auto;padding:0 16px 90px;}
@@ -829,42 +830,9 @@ function playScaleIntervals(rootPc,intervals){
 /* ============================================================
    CLEANUP — stop audio + MIDI before leaving the page
    ============================================================ */
-window.addEventListener('beforeunload', ()=>{
-  try{
-    if(typeof midiAccess !== 'undefined' && midiAccess){
-      for(const input of midiAccess.inputs.values()){
-        input.onmidimessage = null;
-      }
-      midiAccess.onstatechange = null;
-      midiAccess = null;
-    }
-  }catch(e){}
-  try{
-    if(typeof actx !== 'undefined' && actx && actx.state !== 'closed'){
-      actx.close();
-      actx = null;
-    }
-  }catch(e){}
-});
 
-// Also handle nav link clicks — close audio immediately on navigation
-document.addEventListener('click', e=>{
-  const link = e.target.closest('a[href]');
-  if(link && !link.href.includes(window.location.pathname.split('/').pop())){
-    try{
-      if(typeof actx !== 'undefined' && actx && actx.state !== 'closed'){
-        actx.close(); actx = null;
-      }
-    }catch(e){}
-    try{
-      if(typeof midiAccess !== 'undefined' && midiAccess){
-        for(const input of midiAccess.inputs.values()) input.onmidimessage = null;
-        midiAccess.onstatechange = null;
-        midiAccess = null;
-      }
-    }catch(e){}
-  }
-});
+
+/* old conflicting handler removed */
 
 /* ============================================================
    AUDIO
@@ -1900,20 +1868,40 @@ let leaveDestination = null;
 let leaveCancelled = false;
 
 function shutdownAudio(){
+  // Step 1 — disconnect MIDI listeners
   try{
     if(typeof midiAccess !== 'undefined' && midiAccess){
-      for(const input of midiAccess.inputs.values()) input.onmidimessage = null;
+      for(const input of midiAccess.inputs.values()){
+        input.onmidimessage = null;
+      }
       midiAccess.onstatechange = null;
       midiAccess = null;
     }
   }catch(e){}
+
+  // Step 2 — disconnect master gain node so no more sound can reach destination
   try{
-    if(typeof actx !== 'undefined' && actx && actx.state !== 'closed'){
-      actx.close();
-      actx = null;
+    if(typeof master !== 'undefined' && master){
+      master.disconnect();
+    }
+  }catch(e){}
+
+  // Step 3 — suspend the audio context
+  // We do NOT call close() — that causes crashes on desktop browsers
+  // We do NOT null out actx — suspending an already-nulled ref causes errors
+  try{
+    if(typeof actx !== 'undefined' && actx && actx.state === 'running'){
+      actx.suspend();
+      // actx intentionally left non-null — browser cleans it up on unload
     }
   }catch(e){}
 }
+
+// Suspend audio on ANY page exit - belt and suspenders
+window.addEventListener('pagehide', ()=>{ shutdownAudio(); }, {capture:true});
+window.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState==='hidden'){ shutdownAudio(); }
+});
 
 function startLeaveCountdown(dest){
   leaveDestination = dest;
