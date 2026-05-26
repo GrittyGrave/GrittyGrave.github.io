@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gritty Grave — Beats</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Anton&family=Barlow:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0a0c07;--bg2:#0e1109;--panel:#13160d;--panel-2:#1b2012;--panel-3:#222a16;
+    --line:#2e3a1d;--line-2:#41502a;
+    --green:#a9d92e;--green-bright:#c4f23a;--green-soft:#d6e98a;
+    --blood:#d83a2b;--blood-bright:#ff5747;--yellow:#ecc83a;--teal:#3fb6a8;
+    --ink:#e9e7d6;--muted:#8b8f74;--muted-2:#5f6549;
+    --radius:13px;--shadow:0 20px 55px -18px rgba(0,0,0,.9);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{background:var(--bg);color:var(--ink);font-family:'Barlow',sans-serif;
+    -webkit-font-smoothing:antialiased;line-height:1.55;overflow-x:hidden;}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.07;
+    background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAMbWlDQ1BJQ0MgUHJvZmlsZQAASImVVwdYU8kWnltSSWiBCEgJvYlSpEsJoUUQkCrYCEkgocSQEETsyLICK4qIgA1dFVF0LYCsBVFsLIq9LxYUlHWxYEPlTQK67ivfe9+Xb+aee+acOXNn7h0AqCd4YnEOqgFArqhAmhgZyp+Unk4mdQEEGEABHmDG44vFwfHxMQDKcP93eXcToCX7iqOi65/z/1U0BUIxHwBkPMLZAjE/F+FDAHCFXCwtAIAohfem8wukGBYgbCqFAUK8QIFD5bhChrPlOEphk5wYhrCVAEBWeTxZJgCqesjOKuBnQh3VIoRdRAKhCGFRhL34OXk8hBUItlooJC9CeDjnT3ck/40ze0Rnnpc5wp+5pVQIFhKJFHIWpv3fJuQ4CgAA8I2mIFMbAHg2AJy+tE5GDADwLgDARgqEIHwUgHgAGABQ5AEgHQA4AAAMIAAHANAwBkBXAoADAQAEAYAYoAFUgBrQBAbABFgCB+AEXIEHCABBIAxEAx6IAxkgGxSAJbASrAGloAxsAuWgCtSCBtAEDoFW0AG6wA/QD4bBRTAOboFpMA/mIQjCQmSICukhxogFYo84Iy4IAqkQiJBXFElSgxXIIsGRiUgxUgo9glRSe0ktJJ7Ih/QB9aLvIQeqFfqGeqHXaBbqhd1B2HoMKHNlcWqkFJWN7kOqyBTUHzVAN6MrUT/UEj2DrEIPoJPoS+g6dJWCpUYxUSyUPYqNSqASUbmoYlQ5qgbVjGpHdaN+oIZRl9AJdCl6JJqIZqAZ6EB0AjoVvRBdjp6ErkcfRXehz6HH0LfRd9EKdBN6P/oMuhs9gX6LHsNg1DR0MoaFcccwMXGYDEwhphyzGdOIacN0YnoxA5hLmASmDPMSU4Opw+zEHMVcxPRhhzC3MHewtZhp7H3sEuwdHBFXjovFleHG4cbhCnGluApcLe4g7gTuNO4ibhQ3jiPhDHBOOD9cNC4Nl4erxG3HHcG14XpxA7jLuCncA9w6gUDQTfAUCAUzBSmCuUKFYJvgqKBH8FGQLZgSzBasFCwTbBTsEXQKLgoGBAmCmYK5glWC9YIdgmOCXsFxwRXBrOCR4KzgvuCxYFHwXPBGcFfwSfBRcEvwSbBJ8F3wQfBD8FnwU3BNcE3wVfBX8Ft5/AQfhDkEBQoTAhBqGXoT3hOqGFoZvhiKGF4bLhZcNPhpuGK4aPhm2Gh4bLhsuGa4aHhmuGa4Yrhk+Gq4ZLhhsGW4ZLBluGCwZXBg8GOwZHBk8GGwYPBnsGVwYPBlsGfwYbBlsGBwYrBjMGSwZTBisGYwZzBisGMwYzBi8GQwYfBisGQwYrBi8GHwYrBn8GIwZLBicGYwZbBi8GSwZLBisGWwYrBhsGcwY7BlMGcwZrBnsGWwYrBlMGUwZzBlsGWwYLBmsGWwZLBi8GQwYHBm8GOwZfBjsGOwYTBk8GUwZbBisGawYrBlMGawZrBisGYwZbBjMGWwYzBnsGQwYPBhsGcwYHBicGcwYHBjsGewYXBi8GSwYLBm8GKwZTBi8GawZzBjMGWwYzBl8GWwYzBjsGWwYbBi8GWwZLBhsGawZLBi8GcwYXBlcGawZLBi8GKwYbBi8GOwYPBj8GWwZTBhsGYwZzBi8GWwZrBmMGawZLBi8GewZDBi8GKwZzBg8GSwYrBi8GIwZDBgMGcwYHBjsGYwYTBi8GcwYLBm8GOwYLBjsGSwY7BisGSwY3Bg8GUwYHBgsGOwY7BicGMwYvBh8GIwZHBi8GWwYPBisGOwYPBj8GOwZzBh8GcwYzBi8GEwZbBi8GawZzBisGUwYzBg8GSw");
+    background-repeat:repeat;background-size:100px 100px;
+    mix-blend-mode:overlay;}
+  ::selection{background:var(--green);color:#11150a;}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 16px 90px;}
+
+  /* HEADER */
+  header{position:relative;padding:30px 0 14px;text-align:center;}
+  .glow{position:absolute;top:-70px;left:50%;transform:translateX(-50%);
+    width:560px;height:300px;border-radius:50%;
+    background:radial-gradient(closest-side,rgba(169,217,46,.20),transparent);
+    filter:blur(24px);pointer-events:none;}
+  .logo-img{width:min(220px,60vw);height:auto;display:block;margin:0 auto 6px;
+    filter:drop-shadow(0 12px 28px rgba(0,0,0,.7));}
+  h1.title{font-family:'Creepster',system-ui;font-weight:400;
+    font-size:clamp(40px,11vw,76px);line-height:.92;letter-spacing:.02em;
+    color:var(--green-bright);
+    text-shadow:0 0 22px rgba(169,217,46,.5),3px 4px 0 #2c3a13,0 0 4px #000;}
+  .tag{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--muted);margin-top:7px;}
+
+  /* FILTER BAR */
+  .filter-bar{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;
+    margin-top:22px;}
+  .fchip{border:1px solid var(--line);background:var(--panel-2);color:var(--muted);
+    font-family:'Anton',sans-serif;font-size:12.5px;letter-spacing:.03em;
+    padding:8px 14px;border-radius:8px;cursor:pointer;transition:.14s;text-transform:uppercase;}
+  .fchip:hover{color:var(--ink);border-color:var(--line-2);}
+  .fchip.on{background:linear-gradient(160deg,var(--green),#7ba320);color:#11150a;border-color:var(--green);}
+
+  .count-line{text-align:center;font-family:'Space Mono',monospace;font-size:10.5px;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--muted-2);margin-top:14px;}
+
+  /* GRID */
+  .beat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+    gap:13px;margin-top:16px;}
+  .beat-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    overflow:hidden;display:flex;flex-direction:column;transition:.16s;}
+  .beat-card:hover{border-color:var(--line-2);transform:translateY(-2px);}
+  .bc-player{background:var(--bg2);border-bottom:1px solid var(--line);
+    min-height:120px;display:flex;align-items:center;justify-content:center;position:relative;}
+  .bc-player iframe{width:100%;border:0;display:block;}
+  .bc-player .no-embed{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted-2);
+    text-transform:uppercase;letter-spacing:.06em;padding:30px;text-align:center;}
+  .bc-info{padding:14px;flex:1;display:flex;flex-direction:column;}
+  .bc-title{font-family:'Anton',sans-serif;font-size:19px;letter-spacing:.02em;line-height:1.1;}
+  .bc-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;}
+  .bc-pill{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;
+    padding:4px 8px;border-radius:6px;background:var(--panel-2);border:1px solid var(--line);
+    color:var(--green-soft);text-transform:uppercase;letter-spacing:.04em;}
+  .bc-pill.mood{color:var(--yellow);}
+  .bc-tiktok{margin-top:11px;display:inline-flex;align-items:center;gap:6px;
+    font-family:'Anton',sans-serif;font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--blood-bright);text-decoration:none;border:1px solid var(--blood);
+    padding:7px 11px;border-radius:8px;transition:.14s;align-self:flex-start;}
+  .bc-tiktok:hover{background:var(--blood);color:#fff;}
+  .bc-admin-row{display:flex;gap:5px;margin-top:11px;padding-top:11px;
+    border-top:1px solid var(--line);}
+  .bc-admin-row button{flex:1;border:1px solid var(--line);background:var(--panel-2);color:var(--muted);
+    font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;
+    padding:7px;border-radius:7px;cursor:pointer;transition:.14s;}
+  .bc-admin-row button.edit:hover{color:var(--green);border-color:var(--green);}
+  .bc-admin-row button.del:hover{color:var(--blood-bright);border-color:var(--blood);}
+
+  /* EMPTY STATE */
+  .empty-state{text-align:center;padding:54px 20px;background:var(--panel);
+    border:1px dashed var(--line-2);border-radius:var(--radius);margin-top:18px;}
+  .empty-state .es-skull{font-size:42px;opacity:.5;}
+  .empty-state .es-title{font-family:'Anton',sans-serif;font-size:21px;letter-spacing:.03em;
+    margin-top:10px;}
+  .empty-state .es-sub{color:var(--muted);font-size:13.5px;margin-top:6px;max-width:380px;
+    margin-left:auto;margin-right:auto;}
+
+  /* ADMIN LINK */
+  .admin-link{text-align:center;margin-top:30px;}
+  .admin-link button{background:transparent;border:0;color:var(--muted-2);
+    font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.12em;
+    text-transform:uppercase;cursor:pointer;transition:.15s;}
+  .admin-link button:hover{color:var(--green);}
+
+  /* MODAL */
+  .modal{position:fixed;inset:0;background:rgba(5,6,3,.86);z-index:200;
+    display:none;align-items:flex-start;justify-content:center;padding:34px 14px;
+    overflow-y:auto;backdrop-filter:blur(3px);}
+  .modal.show{display:flex;}
+  .modal-box{background:var(--panel);border:1px solid var(--line-2);border-radius:var(--radius);
+    width:100%;max-width:560px;box-shadow:var(--shadow);}
+  .modal-head{display:flex;align-items:center;gap:10px;padding:16px;border-bottom:1px solid var(--line);}
+  .modal-head h3{font-family:'Anton',sans-serif;font-size:18px;letter-spacing:.03em;flex:1;}
+  .modal-x{background:var(--panel-2);border:1px solid var(--line);color:var(--muted);
+    width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;transition:.15s;}
+  .modal-x:hover{color:var(--blood-bright);border-color:var(--blood);}
+  .modal-body{padding:16px;}
+
+  .text-in{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:9px;
+    padding:11px 12px;color:var(--ink);font-family:'Barlow',sans-serif;font-size:14px;transition:.15s;}
+  .text-in:focus{outline:none;border-color:var(--green);}
+  .text-in::placeholder{color:var(--muted-2);}
+  .login-row{display:flex;gap:8px;}
+  .err-msg{color:var(--blood-bright);font-size:12px;margin-top:8px;
+    font-family:'Space Mono',monospace;min-height:15px;}
+
+  .field-block{margin-bottom:12px;}
+  .field-block label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;}
+  .field-block .hint{font-size:11px;color:var(--muted-2);margin-top:5px;}
+  .row-2{display:flex;gap:8px;}
+  .row-2 .field-block{flex:1;}
+
+  .mini-btn{border:1px solid var(--line-2);background:var(--panel-2);color:var(--green);
+    font-family:'Anton',sans-serif;font-size:12px;letter-spacing:.03em;text-transform:uppercase;
+    padding:0 14px;border-radius:8px;cursor:pointer;transition:.15s;white-space:nowrap;}
+  .mini-btn:hover{background:var(--green);color:#11150a;}
+
+  .save-btn{width:100%;border:0;cursor:pointer;margin-top:4px;
+    background:linear-gradient(160deg,var(--green),#7ba320);color:#11150a;
+    font-family:'Anton',sans-serif;font-size:15px;letter-spacing:.04em;text-transform:uppercase;
+    padding:14px;border-radius:11px;transition:.15s;}
+  .save-btn:hover{transform:translateY(-1px);}
+
+  .admin-beat-list{margin-top:6px;}
+  .abl-item{display:flex;align-items:center;gap:9px;background:var(--bg2);
+    border:1px solid var(--line);border-radius:9px;padding:9px 11px;margin-bottom:6px;}
+  .abl-name{flex:1;font-family:'Anton',sans-serif;font-size:13.5px;letter-spacing:.02em;}
+  .abl-meta{font-family:'Space Mono',monospace;font-size:9.5px;color:var(--muted-2);}
+
+  footer{text-align:center;margin-top:40px;padding-top:20px;border-top:1px solid var(--line);}
+  footer .gg{font-family:'Creepster',system-ui;font-size:17px;color:var(--green);letter-spacing:.04em;}
+  footer p{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted-2);
+    letter-spacing:.05em;margin-top:3px;}
+
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);
+    background:var(--green);color:#11150a;font-family:'Anton',sans-serif;font-size:14px;
+    letter-spacing:.04em;text-transform:uppercase;padding:11px 20px;border-radius:99px;
+    opacity:0;pointer-events:none;transition:.3s;z-index:300;box-shadow:0 12px 30px -8px rgba(0,0,0,.7);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast.bad{background:var(--blood);color:#fff;}
+
+  @media(max-width:540px){
+    .wrap{padding:0 12px 80px;}
+    .beat-grid{grid-template-columns:1fr;}
+  }
+
+  /* ===== SITE NAV ===== */
+  .site-nav{
+    position:sticky;top:0;z-index:100;
+    background:rgba(10,12,7,.92);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    padding:0 20px;
+  }
+  .nav-inner{
+    max-width:1080px;margin:0 auto;
+    display:flex;align-items:center;gap:6px;height:54px;
+  }
+  .nav-logo{
+    font-family:'Creepster',system-ui;font-size:22px;color:var(--green-bright);
+    letter-spacing:.03em;text-decoration:none;flex:none;margin-right:8px;
+    text-shadow:0 0 14px rgba(169,217,46,.4);
+  }
+  .nav-links{display:flex;gap:3px;flex:1;overflow-x:auto;}
+  .nav-links::-webkit-scrollbar{height:0;}
+  .nav-link{
+    font-family:'Anton',sans-serif;font-size:12px;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--muted);text-decoration:none;padding:8px 12px;border-radius:8px;
+    white-space:nowrap;transition:.15s;border:1px solid transparent;
+  }
+  .nav-link:hover{color:var(--ink);background:var(--panel-2);}
+  .nav-link.active{color:var(--green);border-color:var(--line);background:var(--panel);}
+
+
+  /* PINNED BEAT */
+  .pin-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--yellow);margin-bottom:8px;}
+  .pin-card{background:var(--panel);border:1px solid var(--line-2);border-radius:var(--radius);
+    overflow:hidden;margin-bottom:24px;}
+  #pinnedBeat{display:none;}
+
+  /* ADMIN TABS */
+  .admin-tabs{display:flex;gap:5px;margin-bottom:14px;}
+  .admin-tab-btn{flex:1;border:1px solid var(--line);background:var(--panel-2);color:var(--muted);
+    font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+    padding:8px;border-radius:7px;cursor:pointer;transition:.14s;}
+  .admin-tab-btn.on{background:linear-gradient(160deg,var(--green),#7ba320);color:#11150a;border-color:var(--green);}
+  .admin-tab-panel{display:none;}
+
+
+  /* ===== GLOBAL ADMIN BTN ===== */
+  .nav-admin-btn{
+    background:transparent;border:1px solid var(--line);color:var(--muted-2);
+    font-size:14px;width:34px;height:34px;border-radius:8px;cursor:pointer;
+    transition:.15s;flex:none;margin-left:4px;
+  }
+  .nav-admin-btn:hover{color:var(--green);border-color:var(--green);}
+  .nav-admin-btn.logged-in{color:var(--green);border-color:var(--green);background:var(--panel);}
+
+  /* ===== GLOBAL ADMIN MODAL ===== */
+  .g-modal{position:fixed;inset:0;background:rgba(5,6,3,.86);z-index:500;
+    display:none;align-items:flex-start;justify-content:center;
+    padding:34px 14px;overflow-y:auto;backdrop-filter:blur(3px);}
+  .g-modal.show{display:flex;}
+  .g-modal-box{background:var(--panel);border:1px solid var(--line-2);border-radius:var(--radius);
+    width:100%;max-width:480px;box-shadow:var(--shadow);}
+  .g-modal-head{display:flex;align-items:center;gap:10px;padding:16px;border-bottom:1px solid var(--line);}
+  .g-modal-head h3{font-family:'Anton',sans-serif;font-size:18px;letter-spacing:.03em;flex:1;}
+  .g-modal-x{background:var(--panel-2);border:1px solid var(--line);color:var(--muted);
+    width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;transition:.15s;}
+  .g-modal-x:hover{color:var(--blood-bright);border-color:var(--blood);}
+  .g-modal-body{padding:16px;}
+  .g-tabs{display:flex;gap:5px;margin-bottom:14px;}
+  .g-tab{flex:1;border:1px solid var(--line);background:var(--panel-2);color:var(--muted);
+    font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+    padding:8px;border-radius:7px;cursor:pointer;transition:.14s;}
+  .g-tab.on{background:linear-gradient(160deg,var(--green),#7ba320);color:#11150a;border-color:var(--green);}
+  .g-panel{display:none;}
+  .g-panel.on{display:block;}
+  .g-field{margin-bottom:12px;}
+  .g-field label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;}
+  .g-hint{font-size:11px;color:var(--muted-2);margin-top:5px;}
+  .g-input{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:9px;
+    padding:11px 12px;color:var(--ink);font-family:'Barlow',sans-serif;font-size:14px;transition:.15s;}
+  .g-input:focus{outline:none;border-color:var(--green);}
+  .g-input::placeholder{color:var(--muted-2);}
+  .g-save{width:100%;border:0;cursor:pointer;margin-top:4px;
+    background:linear-gradient(160deg,var(--green),#7ba320);color:#11150a;
+    font-family:'Anton',sans-serif;font-size:15px;letter-spacing:.04em;text-transform:uppercase;
+    padding:14px;border-radius:11px;transition:.15s;}
+  .g-save:hover{transform:translateY(-1px);}
+  .g-err{color:var(--blood-bright);font-size:12px;margin-top:8px;
+    font-family:'Space Mono',monospace;min-height:15px;}
+  .g-logout{width:100%;border:1px solid var(--line);background:var(--panel-2);color:var(--muted);
+    font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    padding:10px;border-radius:8px;cursor:pointer;transition:.15s;margin-top:8px;}
+  .g-logout:hover{color:var(--blood-bright);border-color:var(--blood);}
+
+</style>
+</head>
+<body>
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html">Gritty Grave</a>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+      <a class="nav-link active" href="beats.html">Beats</a>
+      <a class="nav-link" href="gritty-grave-beat-challenge.html">Challenge</a>
+      <a class="nav-link" href="gritty-grave-piano-lab.html" target="_blank" rel="noopener">Piano Lab ↗</a>
+      <a class="nav-link" href="gritty-grave-sample-chop.html">Sample Chop</a>
+      </div>
+    <button class="nav-admin-btn" id="globalAdminBtn" title="Admin">⚙</button>
+  </div>
+</nav>
+<div class="wrap">
+
+  <header>
+    <div class="glow"></div>
+    <img class="logo-img" id="logoImg" alt="Gritty Grave" />
+    <h1 class="title">The Beats</h1>
+    <div class="tag">From the grave · press play</div>
+  </header>
+
+  <div id="pinnedBeat"></div>
+  <div class="filter-bar" id="filterBar"></div>
+  <div class="count-line" id="countLine"></div>
+
+  <div class="beat-grid" id="beatGrid"></div>
+  <div id="emptyHolder"></div>
+
+  <div class="admin-link">
+    <button id="adminOpen">⚙ Admin</button>
+  </div>
+
+  <footer>
+    <p class="gg">Gritty Grave</p>
+    <p>tell me what to make · i make it · you get tagged</p>
+  </footer>
+</div>
+
+<!-- ADMIN MODAL -->
+<div class="modal" id="adminModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="adminTitle">Admin Login</h3>
+      <button class="modal-x" id="adminClose">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div id="loginView">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:10px;">Enter the admin password to add and manage beats.</p>
+        <div class="login-row">
+          <input class="text-in" id="pwIn" type="password" placeholder="Password" />
+          <button class="mini-btn" id="loginBtn">Enter</button>
+        </div>
+        <div class="err-msg" id="loginErr"></div>
+      </div>
+
+      <div id="dashView" style="display:none;">
+        <div class="admin-tabs">
+          <button class="admin-tab-btn on" data-tab="beats">Beats</button>
+          <button class="admin-tab-btn" data-tab="bio">Bio</button>
+          <button class="admin-tab-btn" data-tab="password">Password</button>
+        </div>
+
+        <!-- BEATS TAB -->
+        <div class="admin-tab-panel" data-panel="beats" style="display:block;">
+          <div class="field-block"><label id="formMode">Add A Beat</label></div>
+          <div class="field-block">
+            <label>Beat Title</label>
+            <input class="text-in" id="bTitle" placeholder="e.g. Midnight Crawl" />
+          </div>
+          <div class="row-2">
+            <div class="field-block"><label>BPM</label><input class="text-in" id="bBpm" placeholder="90" /></div>
+            <div class="field-block"><label>Key</label><input class="text-in" id="bKey" placeholder="A minor" /></div>
+          </div>
+          <div class="field-block">
+            <label>Mood</label>
+            <input class="text-in" id="bMood" placeholder="Dark & Eerie" />
+          </div>
+          <div class="field-block">
+            <label>Embed Link</label>
+            <input class="text-in" id="bEmbed" placeholder="SoundCloud, YouTube or BeatStars link" />
+            <div class="hint">Paste the normal share link — turns into a player automatically.</div>
+          </div>
+          <div class="field-block">
+            <label>TikTok Link <span style="color:var(--muted-2)">— optional</span></label>
+            <input class="text-in" id="bTiktok" placeholder="Link to the TikTok this beat was made on" />
+          </div>
+          <button class="save-btn" id="saveBeatBtn">Save Beat</button>
+          <div class="err-msg" id="formErr"></div>
+          <div class="field-block" style="margin-top:18px;">
+            <label>Current Beats</label>
+            <div class="admin-beat-list" id="adminBeatList"></div>
+          </div>
+        </div>
+
+        <!-- BIO TAB -->
+        <div class="admin-tab-panel" data-panel="bio">
+          <div class="field-block">
+            <label>Site Bio</label>
+            <textarea class="text-in" id="bioInput" rows="5" placeholder="Write your bio here..."></textarea>
+            <div class="hint">Supports basic HTML like &lt;b&gt;bold&lt;/b&gt;. Shows on the home page.</div>
+          </div>
+          <button class="save-btn" id="saveBioBtn">Save Bio</button>
+        </div>
+
+        <!-- PASSWORD TAB -->
+        <div class="admin-tab-panel" data-panel="password">
+          <div class="field-block">
+            <label>Current Password</label>
+            <input class="text-in" id="curPassword" type="password" placeholder="Current password" />
+          </div>
+          <div class="field-block">
+            <label>New Password</label>
+            <input class="text-in" id="newPassword" type="password" placeholder="New password" />
+          </div>
+          <div class="field-block">
+            <label>Confirm New Password</label>
+            <input class="text-in" id="newPassword2" type="password" placeholder="Repeat new password" />
+          </div>
+          <div class="err-msg" id="pwChangeErr"></div>
+          <button class="save-btn" id="savePasswordBtn">Change Password</button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Saved</div>
+
+<script>
+const LOGO_DATA="logo.png";
+</script>
+<script>
+__APPJS__
+</script>
+
+<!-- GLOBAL ADMIN MODAL -->
+<div class="g-modal" id="globalAdminModal">
+  <div class="g-modal-box">
+    <div class="g-modal-head">
+      <h3 id="gAdminTitle">Admin Login</h3>
+      <button class="g-modal-x" id="gAdminClose">✕</button>
+    </div>
+    <div class="g-modal-body">
+      <div id="gLoginView">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:10px;">Enter your admin password.</p>
+        <div style="display:flex;gap:8px;">
+          <input class="g-input" id="gPwIn" type="password" placeholder="Password" style="flex:1;" />
+          <button class="g-save" style="width:auto;padding:0 20px;" id="gLoginBtn">Enter</button>
+        </div>
+        <div class="g-err" id="gLoginErr"></div>
+      </div>
+      <div id="gDashView" style="display:none;">
+        <div class="g-tabs">
+          <button class="g-tab on" data-gtab="bio">Bio</button>
+          <button class="g-tab" data-gtab="password">Password</button>
+        </div>
+        <div class="g-panel on" id="gpanel-bio">
+          <div class="g-field">
+            <label>Site Bio</label>
+            <textarea class="g-input" id="gBioInput" rows="5" placeholder="Write your bio here..."></textarea>
+            <div class="g-hint">Supports basic HTML like &lt;b&gt;bold&lt;/b&gt;. Shows on the home page.</div>
+          </div>
+          <button class="g-save" id="gSaveBioBtn">Save Bio</button>
+          <div class="g-err" id="gBioErr"></div>
+        </div>
+        <div class="g-panel" id="gpanel-password">
+          <div class="g-field"><label>Current Password</label>
+            <input class="g-input" id="gCurPw" type="password" placeholder="Current password" /></div>
+          <div class="g-field"><label>New Password</label>
+            <input class="g-input" id="gNewPw" type="password" placeholder="New password" /></div>
+          <div class="g-field"><label>Confirm New Password</label>
+            <input class="g-input" id="gNewPw2" type="password" placeholder="Repeat new password" /></div>
+          <div class="g-err" id="gPwErr"></div>
+          <button class="g-save" id="gSavePwBtn">Change Password</button>
+        </div>
+        <button class="g-logout" id="gLogoutBtn">Log Out</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ===== GLOBAL ADMIN ===== */
+const SUPABASE_URL_G = 'https://gkglkyrnbgzjudjgqtye.supabase.co';
+const SUPABASE_KEY_G = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrZ2xreXJuYmd6anVkamdxdHllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NDAxNTIsImV4cCI6MjA5NTMxNjE1Mn0.Qmz3ni55c8evWaPjIEONeNiicQnqojBES-LlHOZafOo';
+
+const SBG = {
+  async req(method, path, body){
+    const res = await fetch(SUPABASE_URL_G+'/rest/v1/'+path,{
+      method,
+      headers:{'apikey':SUPABASE_KEY_G,'Authorization':'Bearer '+SUPABASE_KEY_G,
+        'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':''},
+      body:body?JSON.stringify(body):undefined
+    });
+    if(!res.ok) return null;
+    const t=await res.text(); return t?JSON.parse(t):null;
+  },
+  async getSetting(key){
+    const r=await this.req('GET','site_settings?key=eq.'+key+'&select=value');
+    return r&&r[0]?r[0].value:null;
+  },
+  async setSetting(key,value){
+    const existing=await this.req('GET','site_settings?key=eq.'+key+'&select=key');
+    if(existing&&existing.length>0){
+      await this.req('PATCH','site_settings?key=eq.'+key,{value});
+    } else {
+      await this.req('POST','site_settings',{key,value});
+    }
+  }
+};
+
+let gIsAdmin=false;
+let gAdminPassword='grittygrave';
+
+// Load password + bio on startup
+(async()=>{
+  try{
+    const pw=await SBG.getSetting('admin_password');
+    if(pw) gAdminPassword=pw;
+    const bio=await SBG.getSetting('site_bio');
+    if(bio) document.querySelectorAll('.bio-text-display').forEach(el=>el.innerHTML=bio);
+  }catch(e){}
+})();
+
+const gModal=document.getElementById('globalAdminModal');
+const gBtn=document.getElementById('globalAdminBtn');
+
+gBtn.addEventListener('click',()=>{
+  gModal.classList.add('show');
+  if(gIsAdmin){showGDash();}else{showGLogin();}
+});
+document.getElementById('gAdminClose').addEventListener('click',()=>gModal.classList.remove('show'));
+gModal.addEventListener('click',e=>{if(e.target===gModal)gModal.classList.remove('show');});
+
+function showGLogin(){
+  document.getElementById('gLoginView').style.display='';
+  document.getElementById('gDashView').style.display='none';
+  document.getElementById('gAdminTitle').textContent='Admin Login';
+  document.getElementById('gLoginErr').textContent='';
+  document.getElementById('gPwIn').value='';
+}
+function showGDash(){
+  document.getElementById('gLoginView').style.display='none';
+  document.getElementById('gDashView').style.display='';
+  document.getElementById('gAdminTitle').textContent='Admin Panel';
+  gBtn.classList.add('logged-in');
+  SBG.getSetting('site_bio').then(bio=>{
+    if(bio) document.getElementById('gBioInput').value=bio.replace(/<[^>]+>/g,'');
+  });
+}
+
+document.getElementById('gLoginBtn').addEventListener('click',tryGLogin);
+document.getElementById('gPwIn').addEventListener('keydown',e=>{if(e.key==='Enter')tryGLogin();});
+function tryGLogin(){
+  if(document.getElementById('gPwIn').value===gAdminPassword){
+    gIsAdmin=true; showGDash();
+  }else{
+    document.getElementById('gLoginErr').textContent='Wrong password.';
+  }
+}
+
+document.querySelectorAll('.g-tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.g-tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.g-panel').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+    document.getElementById('gpanel-'+t.dataset.gtab).classList.add('on');
+  });
+});
+
+document.getElementById('gSaveBioBtn').addEventListener('click',async()=>{
+  const bio=document.getElementById('gBioInput').value.trim();
+  if(!bio){document.getElementById('gBioErr').textContent='Bio cannot be empty.';return;}
+  await SBG.setSetting('site_bio',bio);
+  document.querySelectorAll('.bio-text-display').forEach(el=>el.innerHTML=bio);
+  document.getElementById('gBioErr').textContent='';
+  gModal.classList.remove('show');
+  gShowToast('Bio saved');
+});
+
+document.getElementById('gSavePwBtn').addEventListener('click',async()=>{
+  const cur=document.getElementById('gCurPw').value;
+  const np=document.getElementById('gNewPw').value;
+  const np2=document.getElementById('gNewPw2').value;
+  const err=document.getElementById('gPwErr');
+  err.textContent='';
+  if(cur!==gAdminPassword){err.textContent='Current password is wrong.';return;}
+  if(!np||np.length<4){err.textContent='New password must be at least 4 characters.';return;}
+  if(np!==np2){err.textContent='Passwords do not match.';return;}
+  await SBG.setSetting('admin_password',np);
+  gAdminPassword=np;
+  ['gCurPw','gNewPw','gNewPw2'].forEach(id=>document.getElementById(id).value='');
+  gShowToast('Password changed');
+});
+
+document.getElementById('gLogoutBtn').addEventListener('click',()=>{
+  gIsAdmin=false;
+  gBtn.classList.remove('logged-in');
+  gModal.classList.remove('show');
+  gShowToast('Logged out');
+});
+
+function gShowToast(msg,bad){
+  const t=document.getElementById('toast');
+  if(!t) return;
+  t.textContent=msg;
+  t.className='toast show'+(bad?' bad':'');
+  setTimeout(()=>{t.className='toast'+(bad?' bad':'');},1700);
+}
+</script>
+
+</body>
+</html>
