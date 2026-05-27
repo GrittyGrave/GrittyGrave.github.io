@@ -839,25 +839,25 @@ function playScaleIntervals(rootPc,intervals){
 /* ============================================================
    AUDIO
    ============================================================ */
-let actx=null,master=null;
+let actx=null,master=null,_comp=null,_conv=null,_rev=null;
 function initAudio(){
   if(actx) {return;}
   actx=new (window.AudioContext||window.webkitAudioContext)();
   master=actx.createGain();master.gain.value=0.8;
-  const comp=actx.createDynamicsCompressor();
-  comp.threshold.value=-18;comp.ratio.value=4;
-  const conv=actx.createConvolver();
+  _comp=actx.createDynamicsCompressor();
+  _comp.threshold.value=-18;_comp.ratio.value=4;
+  _conv=actx.createConvolver();
   const len=actx.sampleRate*1.4;
   const buf=actx.createBuffer(2,len,actx.sampleRate);
   for(let ch=0;ch<2;ch++){
     const d=buf.getChannelData(ch);
     for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6);
   }
-  conv.buffer=buf;
-  const rev=actx.createGain();rev.gain.value=0.15;
-  master.connect(comp);comp.connect(actx.destination);
-  conv.connect(rev);rev.connect(comp);
-  master.__rev=conv;
+  _conv.buffer=buf;
+  _rev=actx.createGain();_rev.gain.value=0.15;
+  master.connect(_comp);_comp.connect(actx.destination);
+  _conv.connect(_rev);_rev.connect(_comp);
+  master.__rev=_conv;
 }
 function resumeAudio(){ initAudio(); if(actx.state==='suspended') actx.resume(); }
 function midiFreq(m){return 440*Math.pow(2,(m-69)/12);}
@@ -1881,29 +1881,26 @@ function shutdownAudio(){
     }
   }catch(e){}
 
-  // Step 2 — disconnect master gain node so no more sound can reach destination
-  try{
-    if(typeof master !== 'undefined' && master){
-      master.disconnect();
-    }
-  }catch(e){}
+  // Step 2 — disconnect the ENTIRE audio graph
+  // master→_comp→destination AND _conv→_rev→_comp must both be severed
+  // Previously only master was disconnected — the conv/rev chain stayed alive = crash
+  try{ if(master) master.disconnect(); }catch(e){}
+  try{ if(_conv)  _conv.disconnect();  }catch(e){}
+  try{ if(_rev)   _rev.disconnect();   }catch(e){}
+  try{ if(_comp)  _comp.disconnect();  }catch(e){}
 
-  // Step 3 — suspend the audio context
-  // We do NOT call close() — that causes crashes on desktop browsers
-  // We do NOT null out actx — suspending an already-nulled ref causes errors
+  // Step 3 — suspend (never close) the audio context
   try{
-    if(typeof actx !== 'undefined' && actx && actx.state === 'running'){
-      actx.suspend();
-      // actx intentionally left non-null — browser cleans it up on unload
+    if(actx && actx.state !== 'closed' && actx.state !== 'suspended'){
+      actx.suspend().catch(()=>{});
     }
   }catch(e){}
 }
 
-// Suspend audio on ANY page exit - belt and suspenders
-window.addEventListener('pagehide', ()=>{ shutdownAudio(); }, {capture:true});
-window.addEventListener('visibilitychange', ()=>{
-  if(document.visibilityState==='hidden'){ shutdownAudio(); }
-});
+// Catch every possible exit path
+window.addEventListener('beforeunload',   ()=>{ shutdownAudio(); }, {capture:true});
+window.addEventListener('pagehide',       ()=>{ shutdownAudio(); }, {capture:true});
+window.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') shutdownAudio(); });
 
 function startLeaveCountdown(dest){
   leaveDestination = dest;
