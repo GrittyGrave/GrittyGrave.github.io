@@ -1,0 +1,2021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MPC 2000XL — Gritty Grave</title>
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Anton&family=Barlow+Condensed:wght@400;700&family=Space+Mono:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #a9d92e;
+  --blood: #d83a2b;
+  --bg: #0a0c07;
+  --cream: #d4c9a8;
+  --mpc-body: #c8bfa0;
+  --mpc-dark: #8a7f68;
+  --mpc-darker: #5a5040;
+  --pad-color: #7a7060;
+  --pad-active: #a9d92e;
+  --lcd-bg: #1a2a0a;
+  --lcd-text: #7ecf2a;
+  --button-blue: #3a4a8a;
+  --button-red: #c02020;
+  --button-cream: #c0b890;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: #ccc;
+  font-family: 'Barlow Condensed', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.4;
+}
+
+/* NAV */
+nav {
+  background: #050705;
+  border-bottom: 2px solid var(--green);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.nav-logo { font-family: 'Creepster', cursive; font-size: 1.8rem; color: var(--green); text-decoration: none; }
+.nav-links { display: flex; gap: 20px; align-items: center; }
+.nav-links a { color: #aaa; text-decoration: none; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; }
+.nav-links a:hover { color: var(--green); }
+.nav-admin { background: none; border: 1px solid #444; color: #666; padding: 4px 8px; cursor: pointer; font-size: 0.8rem; border-radius: 3px; }
+.nav-admin:hover { border-color: var(--green); color: var(--green); }
+
+/* PAGE TITLE */
+.page-header {
+  text-align: center;
+  padding: 30px 20px 10px;
+}
+.page-header h1 {
+  font-family: 'Creepster', cursive;
+  font-size: 2.5rem;
+  color: var(--green);
+  letter-spacing: 3px;
+}
+.page-header p {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  color: #666;
+  margin-top: 6px;
+  letter-spacing: 2px;
+}
+
+/* MAIN LAYOUT */
+.studio-layout {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 24px;
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+/* FLOPPY DISK RACK */
+.disk-rack {
+  background: linear-gradient(180deg, #1a1a14 0%, #0e0e0a 100%);
+  border: 2px solid #2a2a20;
+  border-radius: 8px;
+  padding: 16px 12px;
+  width: 170px;
+  min-width: 170px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.rack-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  color: #555;
+  text-align: center;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #2a2a20;
+  padding-bottom: 8px;
+}
+.disk-slot {
+  margin-bottom: 10px;
+  cursor: pointer;
+  position: relative;
+}
+.floppy {
+  width: 146px;
+  height: 92px;
+  border-radius: 4px 4px 8px 8px;
+  position: relative;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 2px 3px 8px rgba(0,0,0,0.5);
+}
+.disk-slot:hover .floppy { transform: translateY(-2px); box-shadow: 2px 5px 14px rgba(0,0,0,0.7); }
+.disk-slot.active .floppy { transform: translateY(3px); box-shadow: 1px 1px 4px rgba(0,0,0,0.4); }
+.disk-slot.active .floppy::after {
+  content: '▶ LOADED';
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.5rem;
+  color: var(--green);
+  white-space: nowrap;
+}
+
+/* Floppy shell */
+.floppy-shell {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px 4px 8px 8px;
+  position: relative;
+  overflow: hidden;
+}
+/* Metal slider */
+.floppy-shell::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 50px; height: 12px;
+  background: linear-gradient(180deg, #bbb 0%, #888 100%);
+  border-radius: 2px 2px 0 0;
+}
+/* Hub hole */
+.floppy-shell::after {
+  content: '';
+  position: absolute;
+  top: 8px; right: 10px;
+  width: 22px; height: 16px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 2px;
+  border: 1px solid rgba(0,0,0,0.6);
+}
+/* Label area */
+.floppy-label {
+  position: absolute;
+  top: 6px; left: 8px;
+  width: calc(100% - 40px);
+  height: 56px;
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 4px 6px;
+}
+.floppy-genre {
+  font-family: 'VT323', monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+.floppy-desc {
+  font-size: 0.5rem;
+  font-family: 'Space Mono', monospace;
+  line-height: 1.2;
+  opacity: 0.8;
+}
+.floppy-lines {
+  position: absolute;
+  bottom: 18px; left: 8px; right: 8px;
+  height: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.floppy-line { height: 1px; background: rgba(0,0,0,0.2); border-radius: 1px; }
+
+/* Boom Bap */
+.disk-boombap .floppy-shell { background: #1a1a1a; }
+.disk-boombap .floppy-label { background: #f5f0e0; }
+.disk-boombap .floppy-genre { color: #1a1a1a; font-style: italic; }
+.disk-boombap .floppy-desc { color: #444; }
+
+/* Trap */
+.disk-trap .floppy-shell { background: #0d0d0d; }
+.disk-trap .floppy-label { background: #c0001a; }
+.disk-trap .floppy-genre { color: #fff; text-transform: uppercase; letter-spacing: 1px; }
+.disk-trap .floppy-desc { color: rgba(255,255,255,0.8); }
+
+/* G-Funk */
+.disk-gfunk .floppy-shell { background: #0a1520; }
+.disk-gfunk .floppy-label { background: linear-gradient(135deg, #0d4f6e 0%, #6a1f8a 100%); }
+.disk-gfunk .floppy-genre { color: #00ffcc; }
+.disk-gfunk .floppy-desc { color: rgba(200,255,240,0.8); }
+
+/* Hip-Hop */
+.disk-hiphop .floppy-shell { background: #252525; }
+.disk-hiphop .floppy-label { background: #e8e0cc; }
+.disk-hiphop .floppy-genre { color: #222; font-family: 'Anton', sans-serif; font-size: 0.9rem; }
+.disk-hiphop .floppy-desc { color: #555; }
+
+/* Cumbia */
+.disk-cumbia .floppy-shell { background: #1a0800; }
+.disk-cumbia .floppy-label { background: linear-gradient(135deg, #e85d00 0%, #ffc200 100%); }
+.disk-cumbia .floppy-genre { color: #fff; text-shadow: 1px 1px 0 rgba(0,0,0,0.3); }
+.disk-cumbia .floppy-desc { color: rgba(255,255,255,0.9); }
+
+/* Reggae */
+.disk-reggae .floppy-shell { background: #0a1a00; }
+.disk-reggae .floppy-label { background: #1a5c00; border-top: 3px solid #ffcc00; border-bottom: 3px solid #cc0000; }
+.disk-reggae .floppy-genre { color: #ffcc00; }
+.disk-reggae .floppy-desc { color: rgba(255,220,100,0.9); }
+
+/* MPC MACHINE */
+.mpc-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.mpc-machine {
+  background: linear-gradient(160deg, var(--mpc-body) 0%, #b8ae90 50%, #a09880 100%);
+  border-radius: 12px 12px 16px 16px;
+  padding: 16px 18px 20px;
+  width: 580px;
+  box-shadow:
+    0 8px 40px rgba(0,0,0,0.8),
+    inset 0 1px 0 rgba(255,255,255,0.3),
+    inset 0 -2px 4px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+/* Akai logo area */
+.mpc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.akai-logo {
+  font-family: 'Anton', sans-serif;
+  font-size: 1.4rem;
+  color: #1a1a1a;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+.akai-logo span {
+  display: block;
+  font-size: 0.45rem;
+  font-family: 'Barlow Condensed', sans-serif;
+  letter-spacing: 3px;
+  color: #444;
+  margin-top: -2px;
+}
+.mpc-model {
+  text-align: right;
+}
+.mpc-model-name {
+  font-family: 'Anton', sans-serif;
+  font-size: 1.1rem;
+  color: #1a1a1a;
+  letter-spacing: 1px;
+}
+.mpc-subtitle {
+  font-size: 0.5rem;
+  font-family: 'Barlow Condensed', sans-serif;
+  letter-spacing: 2px;
+  color: #555;
+  text-transform: uppercase;
+}
+
+/* LCD SCREEN */
+.lcd-section {
+  background: #2a2620;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border: 2px solid #1a1a14;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+.lcd-screen {
+  background: var(--lcd-bg);
+  border: 1px solid #0a1a04;
+  border-radius: 3px;
+  padding: 8px 12px;
+  flex: 1;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.8), 0 0 8px rgba(100,200,0,0.05);
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.lcd-line1 {
+  font-family: 'VT323', monospace;
+  font-size: 1.1rem;
+  color: var(--lcd-text);
+  letter-spacing: 1px;
+  text-shadow: 0 0 6px rgba(126,207,42,0.6);
+  line-height: 1.2;
+}
+.lcd-line2 {
+  font-family: 'VT323', monospace;
+  font-size: 0.85rem;
+  color: #4a8a1a;
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+.lcd-line3 {
+  font-family: 'VT323', monospace;
+  font-size: 0.7rem;
+  color: #2a5a0a;
+  margin-top: 2px;
+}
+
+/* F-buttons */
+.f-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+}
+.f-btn-row { display: flex; gap: 4px; }
+.f-btn {
+  width: 28px; height: 18px;
+  background: linear-gradient(180deg, #8a8060 0%, #6a6040 100%);
+  border-radius: 3px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.45rem;
+  color: #ddd;
+  box-shadow: 0 2px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+  transition: all 0.08s;
+  display: flex; align-items: center; justify-content: center;
+}
+.f-btn:active { transform: translateY(1px); box-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+
+/* MIDDLE SECTION */
+.mpc-middle {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* LEFT CONTROLS */
+.left-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 130px;
+  min-width: 130px;
+}
+
+/* Q-Link sliders area */
+.qlink-section {
+  background: #2a2620;
+  border-radius: 4px;
+  padding: 6px;
+  border: 1px solid #1a1a14;
+}
+.qlink-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.45rem;
+  color: #666;
+  text-align: center;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+.qlink-sliders {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+.qlink-slider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.qlink-track {
+  width: 10px; height: 40px;
+  background: #1a1a14;
+  border-radius: 5px;
+  border: 1px solid #0a0a08;
+  position: relative;
+  cursor: pointer;
+}
+.qlink-thumb {
+  width: 14px; height: 8px;
+  background: linear-gradient(180deg, #aaa 0%, #777 100%);
+  border-radius: 2px;
+  position: absolute;
+  left: -2px; top: 50%;
+  transform: translateY(-50%);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+.qlink-num {
+  font-family: 'VT323', monospace;
+  font-size: 0.55rem;
+  color: #555;
+}
+
+/* Data wheel */
+.data-wheel-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.data-wheel {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #555 0%, #1a1a1a 60%, #0a0a0a 100%);
+  border: 3px solid #444;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.7), inset 0 1px 3px rgba(255,255,255,0.1);
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.1s;
+  user-select: none;
+}
+.data-wheel::after {
+  content: '';
+  position: absolute;
+  top: 6px; left: 50%;
+  transform: translateX(-50%);
+  width: 4px; height: 4px;
+  background: #888;
+  border-radius: 50%;
+}
+.data-wheel-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.45rem;
+  color: #666;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.bpm-display {
+  font-family: 'VT323', monospace;
+  font-size: 1rem;
+  color: var(--lcd-text);
+  background: var(--lcd-bg);
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid #0a1a04;
+  text-shadow: 0 0 4px rgba(126,207,42,0.5);
+}
+
+/* Small buttons grid */
+.small-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+}
+.sm-btn {
+  height: 20px;
+  background: linear-gradient(180deg, #7a7060 0%, #5a5040 100%);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.38rem;
+  color: #ddd;
+  letter-spacing: 0px;
+  box-shadow: 0 2px 3px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+  transition: all 0.08s;
+  text-align: center;
+  line-height: 1;
+  padding: 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.sm-btn:active { transform: translateY(1px); }
+.sm-btn:hover { background: linear-gradient(180deg, #8a8070 0%, #6a6050 100%); }
+
+/* Locate buttons */
+.locate-section {
+  background: #2a2620;
+  border-radius: 4px;
+  padding: 4px;
+  border: 1px solid #1a1a14;
+}
+.locate-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.4rem;
+  color: #555;
+  text-align: center;
+  letter-spacing: 1px;
+  margin-bottom: 3px;
+}
+.locate-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+}
+.loc-btn {
+  height: 16px;
+  background: linear-gradient(180deg, #6a6050 0%, #4a4030 100%);
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  font-family: 'VT323', monospace;
+  font-size: 0.65rem;
+  color: #bbb;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  transition: all 0.08s;
+}
+.loc-btn:active { transform: translateY(1px); }
+
+/* Transport buttons */
+.transport-section {
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+}
+.trans-btn {
+  flex: 1;
+  height: 28px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+  transition: all 0.08s;
+  text-transform: uppercase;
+  position: relative;
+}
+.trans-btn:active { transform: translateY(2px); box-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+.btn-rec { background: linear-gradient(180deg, #e03030 0%, #a01010 100%); color: #fff; }
+.btn-overdub { background: linear-gradient(180deg, #7a7060 0%, #5a5040 100%); color: #ddd; }
+.btn-stop { background: linear-gradient(180deg, #8a8060 0%, #6a6040 100%); color: #ddd; }
+.btn-play { background: linear-gradient(180deg, #7a7060 0%, #5a5040 100%); color: #ddd; }
+.btn-play-start { background: linear-gradient(180deg, #6a6050 0%, #4a4030 100%); color: #ddd; font-size: 0.42rem; }
+
+.btn-rec.armed { background: linear-gradient(180deg, #ff4040 0%, #cc1010 100%); box-shadow: 0 3px 6px rgba(255,0,0,0.4), 0 0 12px rgba(255,0,0,0.2); }
+.btn-play.playing { background: linear-gradient(180deg, #a9d92e 0%, #7aaa10 100%); color: #1a1a1a; box-shadow: 0 3px 6px rgba(169,217,46,0.4); }
+
+/* Bank buttons */
+.bank-section {
+  display: flex;
+  gap: 3px;
+  margin-top: 4px;
+}
+.bank-btn {
+  flex: 1; height: 20px;
+  background: linear-gradient(180deg, #6a6050 0%, #4a4030 100%);
+  border: none; border-radius: 3px;
+  cursor: pointer;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.5rem; color: #bbb;
+  box-shadow: 0 2px 3px rgba(0,0,0,0.4);
+  transition: all 0.08s;
+}
+.bank-btn.active {
+  background: linear-gradient(180deg, #3a5a8a 0%, #1a3a6a 100%);
+  color: #7af; box-shadow: 0 2px 3px rgba(58,90,138,0.4);
+}
+.bank-btn:active { transform: translateY(1px); }
+
+/* PAD GRID */
+.pad-section {
+  flex: 1;
+}
+.pad-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  background: #2a2620;
+  padding: 12px;
+  border-radius: 8px;
+  border: 2px solid #1a1a14;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+}
+
+.pad {
+  aspect-ratio: 1;
+  background: linear-gradient(160deg, var(--pad-color) 0%, #5a5248 100%);
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  box-shadow:
+    0 4px 8px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    inset 0 -2px 4px rgba(0,0,0,0.3);
+  transition: all 0.06s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  overflow: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.pad:hover {
+  background: linear-gradient(160deg, #8a8070 0%, #6a6258 100%);
+}
+.pad:active, .pad.hitting {
+  transform: translateY(2px) scale(0.97);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.6), inset 0 2px 4px rgba(0,0,0,0.4);
+  background: linear-gradient(160deg, #9ad020 0%, #6a9010 100%);
+}
+.pad.playing-back {
+  background: linear-gradient(160deg, #6ab820 0%, #4a8010 100%);
+  box-shadow: 0 2px 6px rgba(100,180,0,0.4);
+}
+
+/* Pad number */
+.pad-num {
+  position: absolute;
+  top: 3px; left: 4px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.45rem;
+  color: rgba(255,255,255,0.3);
+}
+.pad-name {
+  font-family: 'VT323', monospace;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.85);
+  text-align: center;
+  line-height: 1;
+  pointer-events: none;
+}
+.pad-key {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.42rem;
+  color: rgba(255,255,255,0.35);
+  pointer-events: none;
+}
+
+/* RIGHT SECTION — velocity/level */
+.right-controls {
+  width: 30px;
+  min-width: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+.level-meter {
+  flex: 1;
+  width: 14px;
+  background: #1a1a14;
+  border-radius: 3px;
+  border: 1px solid #0a0a08;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column-reverse;
+}
+.level-fill {
+  width: 100%;
+  background: linear-gradient(0deg, var(--green) 0%, #e8f820 60%, #f82020 100%);
+  transition: height 0.08s ease;
+  border-radius: 0 0 2px 2px;
+}
+.level-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.38rem;
+  color: #555;
+  text-align: center;
+  writing-mode: vertical-rl;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* BOTTOM STRIP — note variation slider */
+.note-var-section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+.note-var-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.4rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+.note-var-slider {
+  flex: 1; height: 14px;
+  background: #1a1a14;
+  border-radius: 3px;
+  border: 1px solid #0a0a08;
+  position: relative;
+  cursor: pointer;
+}
+.note-var-thumb {
+  width: 8px; height: 18px;
+  background: linear-gradient(180deg, #aaa 0%, #777 100%);
+  border-radius: 2px;
+  position: absolute;
+  top: -2px; left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  cursor: ew-resize;
+}
+
+/* HINT OVERLAY */
+.hint-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeOut 0.5s ease 4s forwards;
+}
+@keyframes fadeOut { to { opacity: 0; pointer-events: none; } }
+.hint-box {
+  background: var(--bg);
+  border: 2px solid var(--green);
+  border-radius: 8px;
+  padding: 30px 40px;
+  text-align: center;
+  max-width: 400px;
+}
+.hint-box h2 {
+  font-family: 'Creepster', cursive;
+  color: var(--green);
+  font-size: 1.8rem;
+  margin-bottom: 16px;
+}
+.hint-step {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  color: #aaa;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hint-step span {
+  background: var(--green);
+  color: #1a1a1a;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.hint-dismiss {
+  margin-top: 16px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  color: #444;
+}
+
+/* Keyboard legend */
+.keyboard-legend {
+  background: #0e100a;
+  border: 1px solid #1e2018;
+  border-radius: 6px;
+  padding: 10px 16px;
+  margin-top: 10px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.legend-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.55rem;
+  color: #555;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.legend-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.legend-key {
+  background: #1e2018;
+  border: 1px solid #3a3a28;
+  border-radius: 3px;
+  padding: 2px 5px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.55rem;
+  color: #888;
+  box-shadow: 0 2px 0 #0a0c07;
+}
+.legend-arrow {
+  color: #444;
+  font-size: 0.6rem;
+}
+.legend-desc {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.5rem;
+  color: #444;
+}
+
+/* Tooltip */
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a14;
+  border: 1px solid #3a3a28;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.5rem;
+  color: #aaa;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 10;
+}
+button:hover .tooltip { opacity: 1; }
+[data-tip] { position: relative; }
+[data-tip]:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a14;
+  border: 1px solid #3a3a28;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.5rem;
+  color: #aaa;
+  white-space: nowrap;
+  z-index: 50;
+}
+
+/* Loading animation */
+@keyframes lcdBlink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.lcd-loading { animation: lcdBlink 0.4s ease infinite; }
+
+@keyframes padFlash {
+  0%{background:linear-gradient(160deg,#a9d92e 0%,#7aaa10 100%)}
+  100%{background:linear-gradient(160deg,var(--pad-color) 0%,#5a5248 100%)}
+}
+.pad-flash { animation: padFlash 0.3s ease forwards; }
+
+@media (max-width: 900px) {
+  .studio-layout { flex-direction: column; align-items: center; }
+  .disk-rack { width: 100%; max-width: 580px; display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .disk-slot { margin-bottom: 0; }
+  .mpc-machine { width: 100%; max-width: 580px; }
+}
+@media (max-width: 600px) {
+  .mpc-machine { padding: 10px 10px 14px; }
+  .pad-grid { gap: 5px; padding: 8px; }
+  .pad-name { font-size: 0.7rem; }
+  .mpc-middle { gap: 6px; }
+  .left-controls { width: 100px; min-width: 100px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">Gritty Grave</a>
+  <div class="nav-links">
+    <a href="beats.html">Beats</a>
+    <a href="gritty-grave-studio.html">Studio</a>
+    <a href="gritty-grave-piano-lab.html">Piano Lab</a>
+    <a href="downloads.html">Downloads</a>
+    <button class="nav-admin" onclick="window.location.href='admin.html'">⚙</button>
+  </div>
+</nav>
+
+<!-- HINT OVERLAY -->
+<div class="hint-overlay" id="hintOverlay" onclick="this.style.display='none'">
+  <div class="hint-box">
+    <h2>MPC 2000XL</h2>
+    <div class="hint-step"><span>1</span> Click a floppy disk to load a kit</div>
+    <div class="hint-step"><span>2</span> Hit the pads to play sounds</div>
+    <div class="hint-step"><span>3</span> Press REC + PLAY to record a loop</div>
+    <div class="hint-step"><span>4</span> Use keyboard keys Z X C V / A S D F / Q W E R / 1 2 3 4</div>
+    <div class="hint-dismiss">Click anywhere to dismiss</div>
+  </div>
+</div>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <h1>MPC 2000XL</h1>
+  <p>MIDI PRODUCTION CENTER — VIRTUAL EMULATOR</p>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="studio-layout">
+
+  <!-- FLOPPY DISK RACK -->
+  <div class="disk-rack">
+    <div class="rack-label">◈ Sample Disks</div>
+
+    <div class="disk-slot active" id="disk-boombap" onclick="loadKit('boombap')" data-tip="Load Boom Bap Kit">
+      <div class="floppy disk-boombap">
+        <div class="floppy-shell">
+          <div class="floppy-label">
+            <div class="floppy-genre">BOOM BAP</div>
+            <div class="floppy-desc">NYC Dusty<br>Breaks Vol.1</div>
+          </div>
+          <div class="floppy-lines">
+            <div class="floppy-line"></div>
+            <div class="floppy-line"></div>
+            <div class="floppy-line"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="disk-slot" id="disk-trap" onclick="loadKit('trap')" data-tip="Load Trap Kit">
+      <div class="floppy disk-trap">
+        <div class="floppy-shell">
+          <div class="floppy-label">
+            <div class="floppy-genre">TRAP</div>
+            <div class="floppy-desc">808 Mafia<br>Dark Sounds</div>
+          </div>
+          <div class="floppy-lines">
+            <div class="floppy-line"></div>
+            <div class="floppy-line"></div>
+            <div class="floppy-line"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="disk-slot" id="disk-gfunk" onclick="loadKit('gfunk')" data-tip="Load G-Funk Kit">
+      <div class="floppy disk-gfunk">
+        <div class="floppy-shell">
+          <div class="floppy-label">
+            <div class="floppy-genre">G-FUNK</div>
+            <div class="floppy-desc">West Coast<br>Synth Groove</div>
+          </div>
+          <div class="floppy-lines">
+            <div class="floppy-line"></div>
+            <div class="floppy-line"></div>
+            <div class="floppy-line"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="disk-slot" id="disk-hiphop" onclick="loadKit('hiphop')" data-tip="Load Hip-Hop Kit">
+      <div class="floppy disk-hiphop">
+        <div class="floppy-shell">
+          <div class="floppy-label">
+            <div class="floppy-genre">HIP-HOP</div>
+            <div class="floppy-desc">Classic Soul<br>Breaks Kit</div>
+          </div>
+          <div class="floppy-lines">
+            <div class="floppy-line"></div>
+            <div class="floppy-line"></div>
+            <div class="floppy-line"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="disk-slot" id="disk-cumbia" onclick="loadKit('cumbia')" data-tip="Load Cumbia Kit">
+      <div class="floppy disk-cumbia">
+        <div class="floppy-shell">
+          <div class="floppy-label">
+            <div class="floppy-genre">CUMBIA</div>
+            <div class="floppy-desc">Acordeon<br>& Ritmo</div>
+          </div>
+          <div class="floppy-lines">
+            <div class="floppy-line"></div>
+            <div class="floppy-line"></div>
+            <div class="floppy-line"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="disk-slot" id="disk-reggae" onclick="loadKit('reggae')" data-tip="Load Reggae Kit">
+      <div class="floppy disk-reggae">
+        <div class="floppy-shell">
+          <div class="floppy-label">
+            <div class="floppy-genre">REGGAE</div>
+            <div class="floppy-desc">Roots Riddim<br>One Drop</div>
+          </div>
+          <div class="floppy-lines">
+            <div class="floppy-line"></div>
+            <div class="floppy-line"></div>
+            <div class="floppy-line"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /disk-rack -->
+
+  <!-- MPC MACHINE -->
+  <div class="mpc-wrapper">
+    <div class="mpc-machine">
+
+      <!-- HEADER -->
+      <div class="mpc-header">
+        <div class="akai-logo">AKAI<span>professional</span></div>
+        <div class="mpc-model">
+          <div class="mpc-model-name">MPC2000XL</div>
+          <div class="mpc-subtitle">MIDI Production Center</div>
+        </div>
+      </div>
+
+      <!-- LCD -->
+      <div class="lcd-section">
+        <div class="lcd-screen">
+          <div class="lcd-line1" id="lcd1">BOOM BAP KIT LOADED</div>
+          <div class="lcd-line2" id="lcd2">SEQ: 001  BAR: 1  BT: 1</div>
+          <div class="lcd-line3" id="lcd3">READY — HIT PADS TO PLAY</div>
+        </div>
+        <div class="f-buttons">
+          <div class="f-btn-row">
+            <button class="f-btn">F1</button>
+            <button class="f-btn">F2</button>
+            <button class="f-btn">F3</button>
+          </div>
+          <div class="f-btn-row">
+            <button class="f-btn">F4</button>
+            <button class="f-btn">F5</button>
+            <button class="f-btn">F6</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MIDDLE -->
+      <div class="mpc-middle">
+
+        <!-- LEFT CONTROLS -->
+        <div class="left-controls">
+          <!-- Q-Links -->
+          <div class="qlink-section">
+            <div class="qlink-label">Q-Link</div>
+            <div class="qlink-sliders">
+              <div class="qlink-slider"><div class="qlink-track"><div class="qlink-thumb"></div></div><div class="qlink-num">1</div></div>
+              <div class="qlink-slider"><div class="qlink-track"><div class="qlink-thumb"></div></div><div class="qlink-num">2</div></div>
+              <div class="qlink-slider"><div class="qlink-track"><div class="qlink-thumb"></div></div><div class="qlink-num">3</div></div>
+              <div class="qlink-slider"><div class="qlink-track"><div class="qlink-thumb"></div></div><div class="qlink-num">4</div></div>
+            </div>
+          </div>
+
+          <!-- Data wheel + BPM -->
+          <div class="data-wheel-section">
+            <div class="data-wheel" id="dataWheel" title="Scroll to change BPM"></div>
+            <div class="data-wheel-label">DATA</div>
+            <div class="bpm-display" id="bpmDisplay">120 BPM</div>
+          </div>
+
+          <!-- Small buttons -->
+          <div class="small-buttons">
+            <button class="sm-btn" data-tip="Main Screen">MAIN</button>
+            <button class="sm-btn" data-tip="Open Window">OPEN WIN</button>
+            <button class="sm-btn" data-tip="Next Sequence">NEXT SEQ</button>
+            <button class="sm-btn" data-tip="Track Mute" id="btnTrackMute">TRACK MUTE</button>
+            <button class="sm-btn" data-tip="Full Level" id="btnFullLevel" onclick="toggleFullLevel()">FULL LVL</button>
+            <button class="sm-btn" data-tip="16 Levels">16 LEVELS</button>
+          </div>
+
+          <!-- Locate -->
+          <div class="locate-section">
+            <div class="locate-label">LOCATE</div>
+            <div class="locate-buttons">
+              <button class="loc-btn" data-tip="Step Back">◂◂</button>
+              <button class="loc-btn" data-tip="Go To">GO TO</button>
+              <button class="loc-btn" data-tip="Step Forward">▸▸</button>
+              <button class="loc-btn" data-tip="Bar Back">◂BAR</button>
+              <button class="loc-btn" data-tip="Bar Forward">BAR▸</button>
+              <button class="loc-btn" data-tip="Start">|◂</button>
+            </div>
+          </div>
+
+          <!-- Transport -->
+          <div class="transport-section">
+            <button class="trans-btn btn-rec" id="btnRec" onclick="toggleRec()" data-tip="Arm Recording">REC</button>
+            <button class="trans-btn btn-overdub" id="btnOverdub" onclick="toggleOverdub()" data-tip="Layer on top">OVR</button>
+            <button class="trans-btn btn-stop" onclick="stopPlayback()" data-tip="Stop">STOP</button>
+            <button class="trans-btn btn-play" id="btnPlay" onclick="togglePlay()" data-tip="Play / Stop">PLAY</button>
+            <button class="trans-btn btn-play-start" onclick="playFromStart()" data-tip="Play from Bar 1">PLAY START</button>
+          </div>
+
+          <!-- Bank -->
+          <div class="bank-section">
+            <button class="bank-btn active" id="bankA" onclick="setBank('A')">A</button>
+            <button class="bank-btn" id="bankB" onclick="setBank('B')">B</button>
+            <button class="bank-btn" id="bankC" onclick="setBank('C')">C</button>
+            <button class="bank-btn" id="bankD" onclick="setBank('D')">D</button>
+          </div>
+
+          <!-- Note var -->
+          <div class="note-var-section">
+            <div class="note-var-label">NOTE VAR</div>
+            <div class="note-var-slider"><div class="note-var-thumb" id="noteVarThumb"></div></div>
+          </div>
+
+        </div><!-- /left-controls -->
+
+        <!-- PADS -->
+        <div class="pad-section">
+          <div class="pad-grid" id="padGrid">
+            <!-- Pads 13-16 (top row, keyboard 1234) -->
+            <div class="pad" id="pad13" onmousedown="hitPad(13)" ontouchstart="hitPad(13)">
+              <span class="pad-num">13</span>
+              <span class="pad-name" id="padname13">RIDE</span>
+              <span class="pad-key">1</span>
+            </div>
+            <div class="pad" id="pad14" onmousedown="hitPad(14)" ontouchstart="hitPad(14)">
+              <span class="pad-num">14</span>
+              <span class="pad-name" id="padname14">CRASH</span>
+              <span class="pad-key">2</span>
+            </div>
+            <div class="pad" id="pad15" onmousedown="hitPad(15)" ontouchstart="hitPad(15)">
+              <span class="pad-num">15</span>
+              <span class="pad-name" id="padname15">PERC 1</span>
+              <span class="pad-key">3</span>
+            </div>
+            <div class="pad" id="pad16" onmousedown="hitPad(16)" ontouchstart="hitPad(16)">
+              <span class="pad-num">16</span>
+              <span class="pad-name" id="padname16">PERC 2</span>
+              <span class="pad-key">4</span>
+            </div>
+            <!-- Pads 9-12 (QWER) -->
+            <div class="pad" id="pad9" onmousedown="hitPad(9)" ontouchstart="hitPad(9)">
+              <span class="pad-num">9</span>
+              <span class="pad-name" id="padname9">HH OPEN</span>
+              <span class="pad-key">Q</span>
+            </div>
+            <div class="pad" id="pad10" onmousedown="hitPad(10)" ontouchstart="hitPad(10)">
+              <span class="pad-num">10</span>
+              <span class="pad-name" id="padname10">HH CLSD</span>
+              <span class="pad-key">W</span>
+            </div>
+            <div class="pad" id="pad11" onmousedown="hitPad(11)" ontouchstart="hitPad(11)">
+              <span class="pad-num">11</span>
+              <span class="pad-name" id="padname11">TOM HI</span>
+              <span class="pad-key">E</span>
+            </div>
+            <div class="pad" id="pad12" onmousedown="hitPad(12)" ontouchstart="hitPad(12)">
+              <span class="pad-num">12</span>
+              <span class="pad-name" id="padname12">TOM MID</span>
+              <span class="pad-key">R</span>
+            </div>
+            <!-- Pads 5-8 (ASDF) -->
+            <div class="pad" id="pad5" onmousedown="hitPad(5)" ontouchstart="hitPad(5)">
+              <span class="pad-num">5</span>
+              <span class="pad-name" id="padname5">SNARE 2</span>
+              <span class="pad-key">A</span>
+            </div>
+            <div class="pad" id="pad6" onmousedown="hitPad(6)" ontouchstart="hitPad(6)">
+              <span class="pad-num">6</span>
+              <span class="pad-name" id="padname6">RIM</span>
+              <span class="pad-key">S</span>
+            </div>
+            <div class="pad" id="pad7" onmousedown="hitPad(7)" ontouchstart="hitPad(7)">
+              <span class="pad-num">7</span>
+              <span class="pad-name" id="padname7">CLAP</span>
+              <span class="pad-key">D</span>
+            </div>
+            <div class="pad" id="pad8" onmousedown="hitPad(8)" ontouchstart="hitPad(8)">
+              <span class="pad-num">8</span>
+              <span class="pad-name" id="padname8">TOM LO</span>
+              <span class="pad-key">F</span>
+            </div>
+            <!-- Pads 1-4 (ZXCV) bottom row -->
+            <div class="pad" id="pad1" onmousedown="hitPad(1)" ontouchstart="hitPad(1)">
+              <span class="pad-num">1</span>
+              <span class="pad-name" id="padname1">KICK</span>
+              <span class="pad-key">Z</span>
+            </div>
+            <div class="pad" id="pad2" onmousedown="hitPad(2)" ontouchstart="hitPad(2)">
+              <span class="pad-num">2</span>
+              <span class="pad-name" id="padname2">SNARE</span>
+              <span class="pad-key">X</span>
+            </div>
+            <div class="pad" id="pad3" onmousedown="hitPad(3)" ontouchstart="hitPad(3)">
+              <span class="pad-num">3</span>
+              <span class="pad-name" id="padname3">HH TICK</span>
+              <span class="pad-key">C</span>
+            </div>
+            <div class="pad" id="pad4" onmousedown="hitPad(4)" ontouchstart="hitPad(4)">
+              <span class="pad-num">4</span>
+              <span class="pad-name" id="padname4">808</span>
+              <span class="pad-key">V</span>
+            </div>
+          </div><!-- /pad-grid -->
+        </div><!-- /pad-section -->
+
+        <!-- LEVEL METER -->
+        <div class="right-controls">
+          <div class="level-meter">
+            <div class="level-fill" id="levelFill" style="height:0%"></div>
+          </div>
+          <div class="level-label">LEVEL</div>
+        </div>
+
+      </div><!-- /mpc-middle -->
+
+    </div><!-- /mpc-machine -->
+
+    <!-- KEYBOARD LEGEND -->
+    <div class="keyboard-legend">
+      <div class="legend-label">Keys:</div>
+      <div class="legend-row">
+        <div class="legend-key">1</div><div class="legend-key">2</div><div class="legend-key">3</div><div class="legend-key">4</div>
+        <div class="legend-arrow">→</div><div class="legend-desc">Top row pads</div>
+      </div>
+      <div class="legend-row">
+        <div class="legend-key">Q</div><div class="legend-key">W</div><div class="legend-key">E</div><div class="legend-key">R</div>
+        <div class="legend-arrow">→</div><div class="legend-desc">2nd row</div>
+      </div>
+      <div class="legend-row">
+        <div class="legend-key">A</div><div class="legend-key">S</div><div class="legend-key">D</div><div class="legend-key">F</div>
+        <div class="legend-arrow">→</div><div class="legend-desc">3rd row</div>
+      </div>
+      <div class="legend-row">
+        <div class="legend-key">Z</div><div class="legend-key">X</div><div class="legend-key">C</div><div class="legend-key">V</div>
+        <div class="legend-arrow">→</div><div class="legend-desc">Bottom row</div>
+      </div>
+    </div>
+  </div><!-- /mpc-wrapper -->
+
+</div><!-- /studio-layout -->
+
+<script>
+// ============================================================
+// AUDIO ENGINE
+// ============================================================
+let ctx = null;
+let masterGain = null;
+
+function initAudio() {
+  if (ctx) return;
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = ctx.createGain();
+  masterGain.gain.value = 0.85;
+  masterGain.connect(ctx.destination);
+}
+
+function playSound(fn, vol = 1.0) {
+  if (!ctx) initAudio();
+  if (ctx.state === 'suspended') ctx.resume();
+  const g = ctx.createGain();
+  g.gain.value = vol;
+  g.connect(masterGain);
+  fn(g);
+  // level meter
+  const peak = Math.min(vol, 1.0);
+  showLevel(peak * 100);
+}
+
+function showLevel(pct) {
+  const fill = document.getElementById('levelFill');
+  fill.style.height = pct + '%';
+  clearTimeout(fill._t);
+  fill._t = setTimeout(() => {
+    fill.style.height = '0%';
+  }, 120);
+}
+
+// ============================================================
+// SYNTHESIZED DRUM SOUNDS
+// ============================================================
+
+// --- BOOM BAP ---
+const sounds = {
+  boombap: {
+    names: ['KICK','SNARE','HH TICK','808','SNARE 2','RIM','CLAP','TOM LO','HH OPEN','HH CLSD','TOM HI','TOM MID','RIDE','CRASH','PERC 1','PERC 2'],
+    fns: [
+      // 1 Kick - deep boom bap
+      g => { const o=ctx.createOscillator(),e=ctx.createGain(); o.connect(e);e.connect(g); o.frequency.setValueAtTime(160,ctx.currentTime); o.frequency.exponentialRampToValueAtTime(40,ctx.currentTime+0.12); e.gain.setValueAtTime(1,ctx.currentTime); e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.55); o.start(); o.stop(ctx.currentTime+0.55); addDistortion(g,80); },
+      // 2 Snare
+      g => { snare(g,0.18,180,'#aaa'); },
+      // 3 HH tick
+      g => { hihat(g,0.04,0.9); },
+      // 4 808
+      g => { const o=ctx.createOscillator(),e=ctx.createGain(); o.connect(e);e.connect(g); o.type='sine'; o.frequency.setValueAtTime(60,ctx.currentTime); o.frequency.exponentialRampToValueAtTime(30,ctx.currentTime+0.8); e.gain.setValueAtTime(1,ctx.currentTime); e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.9); o.start(); o.stop(ctx.currentTime+0.9); },
+      // 5 Snare 2
+      g => { snare(g,0.14,220,'#bbb'); },
+      // 6 Rim
+      g => { rim(g); },
+      // 7 Clap
+      g => { clap(g); },
+      // 8 Tom Lo
+      g => { tom(g,80,0.35); },
+      // 9 HH Open
+      g => { hihat(g,0.28,0.6); },
+      // 10 HH Closed
+      g => { hihat(g,0.08,1.0); },
+      // 11 Tom Hi
+      g => { tom(g,200,0.2); },
+      // 12 Tom Mid
+      g => { tom(g,130,0.28); },
+      // 13 Ride
+      g => { cymbal(g,0.4,800); },
+      // 14 Crash
+      g => { cymbal(g,1.2,400); },
+      // 15 Perc 1
+      g => { woodblock(g,600); },
+      // 16 Perc 2
+      g => { woodblock(g,900); }
+    ]
+  },
+  trap: {
+    names: ['808 KICK','TRAP SNR','HH 1/32','808 SUB','SNR ROLL','CLAP','SNAP','TOM','HH OPEN','HH CLSD','TOM HI','PERC','RIDE','CRASH','FX 1','FX 2'],
+    fns: [
+      // 1 808 Kick deep
+      g => { const o=ctx.createOscillator(),e=ctx.createGain(); o.connect(e);e.connect(g); o.frequency.setValueAtTime(80,ctx.currentTime); o.frequency.exponentialRampToValueAtTime(28,ctx.currentTime+0.5); e.gain.setValueAtTime(1.2,ctx.currentTime); e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+1.1); o.start(); o.stop(ctx.currentTime+1.1); },
+      // 2 Trap snare
+      g => { snare(g,0.25,160,'#999'); },
+      // 3 HH 1/32
+      g => { hihat(g,0.03,1.2); },
+      // 4 808 Sub
+      g => { const o=ctx.createOscillator(),e=ctx.createGain(); o.connect(e);e.connect(g); o.type='sine'; o.frequency.setValueAtTime(40,ctx.currentTime); o.frequency.exponentialRampToValueAtTime(20,ctx.currentTime+1.5); e.gain.setValueAtTime(1.0,ctx.currentTime); e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+1.8); o.start(); o.stop(ctx.currentTime+1.8); },
+      // 5 Snare roll
+      g => { snare(g,0.18,200,'#aaa'); },
+      // 6 Clap
+      g => { clap(g); },
+      // 7 Snap
+      g => { snap(g); },
+      // 8 Tom
+      g => { tom(g,70,0.4); },
+      // 9 HH Open long
+      g => { hihat(g,0.4,0.55); },
+      // 10 HH Closed
+      g => { hihat(g,0.06,1.1); },
+      // 11 Tom Hi
+      g => { tom(g,180,0.18); },
+      // 12 Perc
+      g => { woodblock(g,400); },
+      // 13 Ride
+      g => { cymbal(g,0.35,900); },
+      // 14 Crash
+      g => { cymbal(g,1.0,350); },
+      // 15 FX sweep
+      g => { fxSweep(g,200,1000); },
+      // 16 FX down
+      g => { fxSweep(g,1000,80); }
+    ]
+  },
+  gfunk: {
+    names: ['KICK','SNARE','HH OPEN','FUNK BS','SNARE 2','RIM','CLAP','TOM LO','HH TICK','HH SHUF','TOM HI','COWBELL','RIDE','CRASH','SYNTH 1','SYNTH 2'],
+    fns: [
+      // 1 G-Funk kick
+      g => { const o=ctx.createOscillator(),e=ctx.createGain(); o.connect(e);e.connect(g); o.frequency.setValueAtTime(120,ctx.currentTime); o.frequency.exponentialRampToValueAtTime(45,ctx.currentTime+0.1); e.gain.setValueAtTime(0.9,ctx.currentTime); e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.45); o.start(); o.stop(ctx.currentTime+0.45); },
+      g => { snare(g,0.16,200,'#bbb'); },
+      g => { hihat(g,0.22,0.65); },
+      // 4 Funk bass hit
+      g => { const o=ctx.createOscillator(),e=ctx.createGain(); o.type='sawtooth'; o.connect(e);e.connect(g); o.frequency.setValueAtTime(80,ctx.currentTime); o.frequency.exponentialRampToValueAtTime(50,ctx.currentTime+0.3); e.gain.setValueAtTime(0.7,ctx.currentTime); e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.5); const f=ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=300; o.disconnect();o.connect(f);f.connect(e); o.start(); o.stop(ctx.currentTime+0.5); },
+      g => { snare(g,0.13,240,'#ccc'); },
+      g => { rim(g); },
+      g => { clap(g); },
+      g => { tom(g,75,0.38); },
+      g => { hihat(g,0.05,1.1); },
+      g => { hihat(g,0.11,0.85); },
+      g => { tom(g,220,0.18); },
+      // 12 Cowbell
+      g => { cowbell(g); },
+      g => { cymbal(g,0.38,750); },
+      g => { cymbal(g,1.1,380); },
+      // 15 Synth stab
+      g => { synthStab(g,440); },
+      g => { synthStab(g,550); }
+    ]
+  },
+  hiphop: {
+    names: ['KICK','SNARE','HH OPEN','BASS HIT','SNARE 2','RIM','CLAP','TOM LO','HH TICK','HH CLSD','TOM HI','TOM MID','RIDE','CRASH','PERC 1','PERC 2'],
+    fns: [
+      g => { const o=ctx.createOscillator(),e=ctx.createGain(); o.connect(e);e.connect(g); o.frequency.setValueAtTime(140,ctx.currentTime); o.frequency.exponentialRampToValueAtTime(42,ctx.currentTime+0.1); e.gain.setValueAtTime(1.0,ctx.currentTime); e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.5); o.start(); o.stop(ctx.currentTime+0.5); },
+      g => { snare(g,0.17,190,'#aaa'); },
+      g => { hihat(g,0.25,0.62); },
+      g => { const o=ctx.createOscillator(),e=ctx.createGain(); o.type='sine'; o.connect(e);e.connect(g); o.frequency.setValueAtTime(70,ctx.currentTime); o.frequency.exponentialRampToValueAtTime(35,ctx.currentTime+0.6); e.gain.setValueAtTime(0.9,ctx.currentTime); e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.7); o.start(); o.stop(ctx.currentTime+0.7); },
+      g => { snare(g,0.15,210,'#bbb'); },
+      g => { rim(g); },
+      g => { clap(g); },
+      g => { tom(g,78,0.36); },
+      g => { hihat(g,0.045,1.05); },
+      g => { hihat(g,0.09,0.92); },
+      g => { tom(g,195,0.19); },
+      g => { tom(g,125,0.27); },
+      g => { cymbal(g,0.42,780); },
+      g => { cymbal(g,1.15,390); },
+      g => { woodblock(g,580); },
+      g => { woodblock(g,870); }
+    ]
+  },
+  cumbia: {
+    names: ['KICK','SNARE','GUIRO','BASS','CONGA LO','CONGA HI','CLAP','CLAVE','MARACAS','HH','TOM','COWBELL','RIDE','CRASH','ACORDN','PERC'],
+    fns: [
+      g => { const o=ctx.createOscillator(),e=ctx.createGain(); o.connect(e);e.connect(g); o.frequency.setValueAtTime(100,ctx.currentTime); o.frequency.exponentialRampToValueAtTime(38,ctx.currentTime+0.08); e.gain.setValueAtTime(0.85,ctx.currentTime); e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.38); o.start(); o.stop(ctx.currentTime+0.38); },
+      g => { snare(g,0.14,210,'#bbb'); },
+      // 3 Guiro
+      g => { guiro(g); },
+      g => { const o=ctx.createOscillator(),e=ctx.createGain(); o.type='triangle'; o.connect(e);e.connect(g); o.frequency.value=65; e.gain.setValueAtTime(0.8,ctx.currentTime); e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4); o.start(); o.stop(ctx.currentTime+0.4); },
+      // 5-6 Congas
+      g => { conga(g,180); },
+      g => { conga(g,280); },
+      g => { clap(g); },
+      // 8 Clave
+      g => { woodblock(g,1200); },
+      // 9 Maracas
+      g => { maraca(g); },
+      g => { hihat(g,0.1,0.9); },
+      g => { tom(g,100,0.22); },
+      g => { cowbell(g); },
+      g => { cymbal(g,0.35,820); },
+      g => { cymbal(g,0.9,420); },
+      // 15 Accordion-like stab
+      g => { accordionStab(g,330); },
+      g => { woodblock(g,700); }
+    ]
+  },
+  reggae: {
+    names: ['KICK','SNARE','HH OPEN','BASS','RIDDIM','RIM','CLAP','TOM LO','HH TICK','SKANK','TOM HI','COWBELL','RIDE','CRASH','ORGAN','PERC'],
+    fns: [
+      // 1 Reggae kick - short
+      g => { const o=ctx.createOscillator(),e=ctx.createGain(); o.connect(e);e.connect(g); o.frequency.setValueAtTime(90,ctx.currentTime); o.frequency.exponentialRampToValueAtTime(40,ctx.currentTime+0.07); e.gain.setValueAtTime(0.9,ctx.currentTime); e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3); o.start(); o.stop(ctx.currentTime+0.3); },
+      g => { snare(g,0.2,170,'#999'); },
+      g => { hihat(g,0.3,0.58); },
+      // 4 Reggae bass
+      g => { const o=ctx.createOscillator(),e=ctx.createGain(); o.type='sawtooth'; const f=ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=250; o.connect(f);f.connect(e);e.connect(g); o.frequency.setValueAtTime(55,ctx.currentTime); e.gain.setValueAtTime(0.7,ctx.currentTime); e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.55); o.start(); o.stop(ctx.currentTime+0.55); },
+      // 5 Riddim (offbeat) skank
+      g => { reggaeSkank(g,440); },
+      g => { rim(g); },
+      g => { clap(g); },
+      g => { tom(g,72,0.33); },
+      g => { hihat(g,0.05,1.0); },
+      // 10 Skank chord
+      g => { reggaeSkank(g,330); },
+      g => { tom(g,190,0.2); },
+      g => { cowbell(g); },
+      g => { cymbal(g,0.4,760); },
+      g => { cymbal(g,1.05,410); },
+      // 15 Organ stab
+      g => { organStab(g,262); },
+      g => { woodblock(g,650); }
+    ]
+  }
+};
+
+// ---- Sound primitives ----
+function snare(g, decay, freq, color) {
+  const buf = ctx.createBuffer(1, ctx.sampleRate*decay, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,0.5);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const f = ctx.createBiquadFilter();
+  f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = 0.8;
+  const e = ctx.createGain();
+  src.connect(f); f.connect(e); e.connect(g);
+  e.gain.setValueAtTime(0.9,ctx.currentTime);
+  e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+decay);
+  src.start(); src.stop(ctx.currentTime+decay);
+  // tone body
+  const o=ctx.createOscillator(),oe=ctx.createGain();
+  o.connect(oe);oe.connect(g); o.frequency.value=200;
+  oe.gain.setValueAtTime(0.4,ctx.currentTime);
+  oe.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+decay*0.4);
+  o.start(); o.stop(ctx.currentTime+decay*0.4);
+}
+
+function hihat(g, decay, brightness) {
+  const buf = ctx.createBuffer(1, ctx.sampleRate*decay, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,0.7);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const f = ctx.createBiquadFilter();
+  f.type = 'highpass'; f.frequency.value = 7000 * brightness;
+  const e = ctx.createGain();
+  src.connect(f); f.connect(e); e.connect(g);
+  e.gain.setValueAtTime(0.7,ctx.currentTime);
+  e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+decay);
+  src.start(); src.stop(ctx.currentTime+decay);
+}
+
+function rim(g) {
+  const o=ctx.createOscillator(),e=ctx.createGain();
+  o.connect(e);e.connect(g); o.type='square'; o.frequency.value=400;
+  e.gain.setValueAtTime(0.5,ctx.currentTime);
+  e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.05);
+  o.start(); o.stop(ctx.currentTime+0.05);
+}
+
+function clap(g) {
+  const times=[0,0.01,0.02];
+  times.forEach(t=>{
+    const buf=ctx.createBuffer(1,ctx.sampleRate*0.12,ctx.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,1.5);
+    const src=ctx.createBufferSource(); src.buffer=buf;
+    const f=ctx.createBiquadFilter(); f.type='bandpass'; f.frequency.value=1200; f.Q.value=1;
+    const e=ctx.createGain();
+    src.connect(f);f.connect(e);e.connect(g);
+    e.gain.setValueAtTime(0.6,ctx.currentTime+t);
+    e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+t+0.12);
+    src.start(ctx.currentTime+t); src.stop(ctx.currentTime+t+0.12);
+  });
+}
+
+function snap(g) {
+  const o=ctx.createOscillator(),e=ctx.createGain();
+  o.type='triangle'; o.connect(e);e.connect(g);
+  o.frequency.setValueAtTime(800,ctx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(200,ctx.currentTime+0.03);
+  e.gain.setValueAtTime(0.6,ctx.currentTime);
+  e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.04);
+  o.start(); o.stop(ctx.currentTime+0.04);
+}
+
+function tom(g, freq, decay) {
+  const o=ctx.createOscillator(),e=ctx.createGain();
+  o.connect(e);e.connect(g); o.frequency.setValueAtTime(freq,ctx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(freq*0.5,ctx.currentTime+decay);
+  e.gain.setValueAtTime(0.8,ctx.currentTime);
+  e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+decay);
+  o.start(); o.stop(ctx.currentTime+decay);
+}
+
+function cymbal(g, decay, freq) {
+  const buf=ctx.createBuffer(1,ctx.sampleRate*decay,ctx.sampleRate);
+  const d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,0.4);
+  const src=ctx.createBufferSource(); src.buffer=buf;
+  const f=ctx.createBiquadFilter(); f.type='bandpass'; f.frequency.value=freq; f.Q.value=0.5;
+  const e=ctx.createGain();
+  src.connect(f);f.connect(e);e.connect(g);
+  e.gain.setValueAtTime(0.5,ctx.currentTime);
+  e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+decay);
+  src.start(); src.stop(ctx.currentTime+decay);
+}
+
+function woodblock(g, freq) {
+  const o=ctx.createOscillator(),e=ctx.createGain();
+  o.type='triangle'; o.connect(e);e.connect(g); o.frequency.value=freq;
+  e.gain.setValueAtTime(0.6,ctx.currentTime);
+  e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.06);
+  o.start(); o.stop(ctx.currentTime+0.06);
+}
+
+function cowbell(g) {
+  [562,845].forEach(f=>{
+    const o=ctx.createOscillator(),e=ctx.createGain();
+    o.type='square'; o.connect(e);e.connect(g); o.frequency.value=f;
+    e.gain.setValueAtTime(0.3,ctx.currentTime);
+    e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);
+    o.start(); o.stop(ctx.currentTime+0.3);
+  });
+}
+
+function synthStab(g, freq) {
+  const o=ctx.createOscillator(),e=ctx.createGain();
+  const f=ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.value=2000;
+  o.type='sawtooth'; o.connect(f);f.connect(e);e.connect(g); o.frequency.value=freq;
+  e.gain.setValueAtTime(0.5,ctx.currentTime);
+  e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.18);
+  o.start(); o.stop(ctx.currentTime+0.18);
+}
+
+function accordionStab(g, freq) {
+  [1,1.5,2].forEach((r,i)=>{
+    const o=ctx.createOscillator(),e=ctx.createGain();
+    o.type='sawtooth'; o.connect(e);e.connect(g); o.frequency.value=freq*r;
+    e.gain.setValueAtTime(0.25,ctx.currentTime);
+    e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.25);
+    o.start(); o.stop(ctx.currentTime+0.25);
+  });
+}
+
+function organStab(g, freq) {
+  [1,2,3].forEach(r=>{
+    const o=ctx.createOscillator(),e=ctx.createGain();
+    o.type='sine'; o.connect(e);e.connect(g); o.frequency.value=freq*r;
+    e.gain.setValueAtTime(0.2/r,ctx.currentTime);
+    e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);
+    o.start(); o.stop(ctx.currentTime+0.3);
+  });
+}
+
+function reggaeSkank(g, freq) {
+  const o=ctx.createOscillator(),e=ctx.createGain();
+  const f=ctx.createBiquadFilter(); f.type='bandpass'; f.frequency.value=1500; f.Q.value=2;
+  o.type='sawtooth'; o.connect(f);f.connect(e);e.connect(g); o.frequency.value=freq;
+  e.gain.setValueAtTime(0.4,ctx.currentTime);
+  e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.12);
+  o.start(); o.stop(ctx.currentTime+0.12);
+}
+
+function conga(g, freq) {
+  const o=ctx.createOscillator(),e=ctx.createGain();
+  o.connect(e);e.connect(g); o.frequency.setValueAtTime(freq,ctx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(freq*0.6,ctx.currentTime+0.12);
+  e.gain.setValueAtTime(0.7,ctx.currentTime);
+  e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.18);
+  o.start(); o.stop(ctx.currentTime+0.18);
+}
+
+function guiro(g) {
+  const buf=ctx.createBuffer(1,ctx.sampleRate*0.2,ctx.sampleRate);
+  const d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.sin(i/50)*Math.pow(1-i/d.length,0.5);
+  const src=ctx.createBufferSource(); src.buffer=buf;
+  const f=ctx.createBiquadFilter(); f.type='bandpass'; f.frequency.value=2000; f.Q.value=2;
+  const e=ctx.createGain();
+  src.connect(f);f.connect(e);e.connect(g);
+  e.gain.value=0.6; src.start(); src.stop(ctx.currentTime+0.2);
+}
+
+function maraca(g) {
+  const buf=ctx.createBuffer(1,ctx.sampleRate*0.07,ctx.sampleRate);
+  const d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,1.2);
+  const src=ctx.createBufferSource(); src.buffer=buf;
+  const f=ctx.createBiquadFilter(); f.type='highpass'; f.frequency.value=5000;
+  const e=ctx.createGain();
+  src.connect(f);f.connect(e);e.connect(g);
+  e.gain.value=0.5; src.start(); src.stop(ctx.currentTime+0.07);
+}
+
+function fxSweep(g, f1, f2) {
+  const o=ctx.createOscillator(),e=ctx.createGain();
+  o.type='sawtooth'; o.connect(e);e.connect(g);
+  o.frequency.setValueAtTime(f1,ctx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(f2,ctx.currentTime+0.3);
+  e.gain.setValueAtTime(0.4,ctx.currentTime);
+  e.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);
+  o.start(); o.stop(ctx.currentTime+0.3);
+}
+
+function addDistortion(g, amount) {
+  // slight saturation via waveshaper
+  const ws=ctx.createWaveShaper();
+  const n=256, curve=new Float32Array(n);
+  for(let i=0;i<n;i++){
+    const x=i*2/n-1;
+    curve[i]=((Math.PI+amount)*x)/(Math.PI+amount*Math.abs(x));
+  }
+  ws.curve=curve;
+  // already connected, just enhance
+}
+
+// ============================================================
+// KIT STATE
+// ============================================================
+let currentKit = 'boombap';
+let currentBank = 'A';
+let bpm = 120;
+let isPlaying = false;
+let isRecording = false;
+let isOverdub = false;
+let fullLevel = false;
+
+// Sequencer
+let sequence = []; // [{pad, time}]
+let recordStart = null;
+let loopLength = 2000; // ms - 2 bars at 120bpm = 2*2*500
+let playInterval = null;
+let beatTick = null;
+let currentBar = 1;
+let currentBeat = 1;
+
+function getBeatMs() { return 60000 / bpm; }
+function getLoopMs() { return getBeatMs() * 8; } // 2 bars of 4/4
+
+// ============================================================
+// KIT LOADING
+// ============================================================
+function loadKit(kitName) {
+  // Animate disk
+  document.querySelectorAll('.disk-slot').forEach(d => d.classList.remove('active'));
+  document.getElementById('disk-' + kitName).classList.add('active');
+
+  // LCD loading animation
+  setLCD('LOADING DISK...', kitName.toUpperCase() + ' KIT', 'PLEASE WAIT...', true);
+
+  setTimeout(() => {
+    currentKit = kitName;
+    const kit = sounds[kitName];
+
+    // Update pad names
+    for (let i = 1; i <= 16; i++) {
+      document.getElementById('padname' + i).textContent = kit.names[i-1];
+    }
+
+    const kitDisplayNames = {
+      boombap: 'BOOM BAP KIT LOADED',
+      trap: 'TRAP KIT LOADED',
+      gfunk: 'G-FUNK KIT LOADED',
+      hiphop: 'HIP-HOP KIT LOADED',
+      cumbia: 'CUMBIA KIT LOADED',
+      reggae: 'REGGAE KIT LOADED'
+    };
+
+    setLCD(kitDisplayNames[kitName], 'SEQ:001  BNK:' + currentBank, 'READY — HIT PADS');
+
+    // Flash all pads
+    for (let i = 1; i <= 16; i++) {
+      const pad = document.getElementById('pad' + i);
+      pad.classList.add('pad-flash');
+      setTimeout(() => pad.classList.remove('pad-flash'), 300 + i * 20);
+    }
+
+    // Disk click sound
+    playDiskSound();
+  }, 600);
+}
+
+function playDiskSound() {
+  if (!ctx) initAudio();
+  if (ctx.state === 'suspended') ctx.resume();
+  // mechanical click
+  const buf = ctx.createBuffer(1, ctx.sampleRate * 0.08, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/d.length, 3);
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const f = ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.value=800;
+  const g = ctx.createGain(); g.gain.value = 0.3;
+  src.connect(f); f.connect(g); g.connect(ctx.destination);
+  src.start(); src.stop(ctx.currentTime + 0.08);
+}
+
+// ============================================================
+// PAD HIT
+// ============================================================
+function hitPad(padNum) {
+  initAudio();
+  if (ctx.state === 'suspended') ctx.resume();
+
+  const kit = sounds[currentKit];
+  const soundIndex = padNum - 1;
+  const vol = fullLevel ? 1.0 : 0.7 + Math.random() * 0.3;
+
+  playSound(g => kit.fns[soundIndex](g), vol);
+
+  // Visual flash
+  const pad = document.getElementById('pad' + padNum);
+  pad.classList.add('hitting');
+  setTimeout(() => pad.classList.remove('hitting'), 80);
+
+  // Record if armed
+  if (isRecording || isOverdub) {
+    const now = performance.now();
+    const relTime = ((now - recordStart) % getLoopMs());
+    sequence.push({ pad: padNum, time: relTime });
+    updateLCD2('REC ● ' + sequence.length + ' EVENTS');
+  }
+}
+
+// ============================================================
+// TRANSPORT
+// ============================================================
+function toggleRec() {
+  initAudio();
+  isRecording = !isRecording;
+  const btn = document.getElementById('btnRec');
+  if (isRecording) {
+    btn.classList.add('armed');
+    if (!isPlaying) startPlayback();
+    setLCD('● RECORDING', 'SEQ:001  BNK:' + currentBank, 'TAP PADS TO RECORD');
+    // Clear sequence if not overdub
+    if (!isOverdub) { sequence = []; }
+    recordStart = performance.now();
+  } else {
+    btn.classList.remove('armed');
+    setLCD('REC STOPPED', 'SEQ:001  ' + sequence.length + ' EVENTS', 'PLAYING LOOP');
+  }
+}
+
+function toggleOverdub() {
+  isOverdub = !isOverdub;
+  const btn = document.getElementById('btnOverdub');
+  btn.style.background = isOverdub
+    ? 'linear-gradient(180deg,#4a8a2a 0%,#2a5a10 100%)'
+    : 'linear-gradient(180deg,#7a7060 0%,#5a5040 100%)';
+  setLCDLine3(isOverdub ? 'OVERDUB ON — LAYERING' : 'OVERDUB OFF');
+}
+
+function togglePlay() {
+  if (isPlaying) {
+    stopPlayback();
+  } else {
+    startPlayback();
+  }
+}
+
+function startPlayback() {
+  initAudio();
+  isPlaying = true;
+  document.getElementById('btnPlay').classList.add('playing');
+  recordStart = performance.now();
+  setLCD('▶ PLAYING', 'SEQ:001  BPM:' + bpm, 'LOOP ACTIVE');
+  runLoop();
+}
+
+function stopPlayback() {
+  isPlaying = false;
+  isRecording = false;
+  document.getElementById('btnPlay').classList.remove('playing');
+  document.getElementById('btnRec').classList.remove('armed');
+  clearTimeout(beatTick);
+  setLCD('■ STOPPED', 'SEQ:001  BNK:' + currentBank, 'READY — HIT PADS');
+  // Remove playback highlights
+  document.querySelectorAll('.pad').forEach(p => p.classList.remove('playing-back'));
+}
+
+function playFromStart() {
+  stopPlayback();
+  setTimeout(() => startPlayback(), 50);
+}
+
+function runLoop() {
+  if (!isPlaying) return;
+  const loopMs = getLoopMs();
+  const start = performance.now();
+
+  function tick() {
+    if (!isPlaying) return;
+    const now = performance.now();
+    const elapsed = (now - recordStart) % loopMs;
+    const lookahead = 30;
+
+    // Play events in this window
+    sequence.forEach(ev => {
+      const diff = ev.time - elapsed;
+      if (diff >= 0 && diff < lookahead && !ev._played) {
+        ev._played = true;
+        setTimeout(() => {
+          if (!isPlaying) return;
+          const kit = sounds[currentKit];
+          playSound(g => kit.fns[ev.pad-1](g), 0.75);
+          const pad = document.getElementById('pad' + ev.pad);
+          pad.classList.add('playing-back');
+          setTimeout(() => pad.classList.remove('playing-back'), 80);
+        }, diff);
+      }
+      // Reset played flag when loop restarts
+      if (elapsed < 50) ev._played = false;
+    });
+
+    // Update beat display
+    const beat = Math.floor(elapsed / getBeatMs()) + 1;
+    const bar = Math.floor(elapsed / (getBeatMs() * 4)) + 1;
+    if (isRecording) {
+      setLCDLine2('REC ● BAR:' + bar + '  BT:' + ((beat-1)%4+1));
+    } else {
+      setLCDLine2('▶ BAR:' + bar + '  BEAT:' + ((beat-1)%4+1) + '  BPM:' + bpm);
+    }
+
+    beatTick = setTimeout(tick, 10);
+  }
+  tick();
+}
+
+// ============================================================
+// CONTROLS
+// ============================================================
+function setBank(bank) {
+  currentBank = bank;
+  ['A','B','C','D'].forEach(b => {
+    document.getElementById('bank'+b).classList.toggle('active', b===bank);
+  });
+  setLCDLine3('BANK ' + bank + ' SELECTED');
+}
+
+function toggleFullLevel() {
+  fullLevel = !fullLevel;
+  const btn = document.getElementById('btnFullLevel');
+  btn.style.background = fullLevel
+    ? 'linear-gradient(180deg,#4a8a2a 0%,#2a5a10 100%)'
+    : '';
+  setLCDLine3(fullLevel ? 'FULL LEVEL ON' : 'FULL LEVEL OFF');
+}
+
+// Data wheel for BPM
+let wheelDragging = false;
+let wheelStartY = 0;
+let wheelStartBpm = 120;
+const wheel = document.getElementById('dataWheel');
+
+wheel.addEventListener('mousedown', e => {
+  wheelDragging = true;
+  wheelStartY = e.clientY;
+  wheelStartBpm = bpm;
+  e.preventDefault();
+});
+wheel.addEventListener('wheel', e => {
+  bpm = Math.max(40, Math.min(240, bpm - Math.sign(e.deltaY)));
+  document.getElementById('bpmDisplay').textContent = bpm + ' BPM';
+  setLCDLine2('TEMPO: ' + bpm + ' BPM');
+  e.preventDefault();
+}, { passive: false });
+document.addEventListener('mousemove', e => {
+  if (!wheelDragging) return;
+  const delta = wheelStartY - e.clientY;
+  bpm = Math.max(40, Math.min(240, wheelStartBpm + Math.round(delta / 3)));
+  document.getElementById('bpmDisplay').textContent = bpm + ' BPM';
+  wheel.style.transform = 'rotate(' + (delta) + 'deg)';
+});
+document.addEventListener('mouseup', () => {
+  if (wheelDragging) {
+    wheelDragging = false;
+    wheel.style.transform = '';
+    setLCDLine2('TEMPO SET: ' + bpm + ' BPM');
+  }
+});
+
+// ============================================================
+// KEYBOARD INPUT
+// ============================================================
+const keyMap = {
+  'z':1, 'x':2, 'c':3, 'v':4,
+  'a':5, 's':6, 'd':7, 'f':8,
+  'q':9, 'w':10, 'e':11, 'r':12,
+  '1':13, '2':14, '3':15, '4':16
+};
+
+const keysDown = {};
+document.addEventListener('keydown', e => {
+  // Ignore if typing in input
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  const key = e.key.toLowerCase();
+  if (keyMap[key] && !keysDown[key]) {
+    keysDown[key] = true;
+    hitPad(keyMap[key]);
+  }
+  // Spacebar = play/stop
+  if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+});
+document.addEventListener('keyup', e => {
+  keysDown[e.key.toLowerCase()] = false;
+});
+
+// ============================================================
+// LCD HELPERS
+// ============================================================
+function setLCD(l1, l2, l3, loading=false) {
+  const e1 = document.getElementById('lcd1');
+  const e2 = document.getElementById('lcd2');
+  const e3 = document.getElementById('lcd3');
+  e1.textContent = l1; e2.textContent = l2 || ''; e3.textContent = l3 || '';
+  if (loading) {
+    e1.classList.add('lcd-loading');
+    setTimeout(() => e1.classList.remove('lcd-loading'), 600);
+  }
+}
+function setLCDLine2(t) { document.getElementById('lcd2').textContent = t; }
+function setLCDLine3(t) { document.getElementById('lcd3').textContent = t; }
+function updateLCD2(t) { setLCDLine2(t); }
+
+// ============================================================
+// ANALYTICS
+// ============================================================
+const SUPABASE_URL = 'https://gkglkyrnbgzjudjgqtye.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrZ2xreXJuYmd6anVkamdxdHllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NDAxNTIsImV4cCI6MjA5NTMxNjE1Mn0.Qmz3ni55c8evWaPjIEONeNiicQnqojBES-LlHOZafOo';
+
+fetch(`${SUPABASE_URL}/rest/v1/page_views`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`
+  },
+  body: JSON.stringify({ page: 'mpc2000xl', visited_at: new Date().toISOString() })
+}).catch(() => {});
+
+// ============================================================
+// INIT
+// ============================================================
+// Auto-dismiss hint after 4s (CSS handles fade, this removes it from DOM)
+setTimeout(() => {
+  const h = document.getElementById('hintOverlay');
+  if (h) h.style.display = 'none';
+}, 4500);
+
+// Load default kit labels
+loadKit('boombap');
+</script>
+</body>
+</html>
