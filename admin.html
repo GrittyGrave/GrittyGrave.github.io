@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Gritty Grave — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Anton&family=Barlow:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --bg:#0a0c07;--bg2:#0e1109;--panel:#13160d;--panel-2:#1b2012;--panel-3:#222a16;
+    --line:#2e3a1d;--line-2:#41502a;
+    --green:#a9d92e;--green-bright:#c4f23a;--green-soft:#d6e98a;
+    --blood:#d83a2b;--blood-bright:#ff5747;--yellow:#ecc83a;--teal:#3fb6a8;
+    --ink:#e9e7d6;--muted:#8b8f74;--muted-2:#5f6549;
+    --radius:13px;--shadow:0 20px 55px -18px rgba(0,0,0,.9);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{background:var(--bg);color:var(--ink);font-family:'Barlow',sans-serif;
+    -webkit-font-smoothing:antialiased;line-height:1.55;overflow-x:hidden;}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.07;
+    background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEWFhYWDg4N3d3dtbW17e3t1dXWBgYGHh4t5eXlzc3OLi4ubm5uVlZWPj4+NjY19fX2JiYl/f39ra2uRkZGZmZlpaWmXl5dvb29xcXGTk5NnZ2c8TV1mAAAAG3RSTlNAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEB9VoGNAAAASElEQVR42u3BMQEAAADCoPVP7WsIoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeAMBxAABPQAAAABJRU5ErkJggg==");
+    background-repeat:repeat;background-size:100px 100px;mix-blend-mode:overlay;}
+  ::selection{background:var(--green);color:#11150a;}
+
+  /* LOGIN SCREEN */
+  .login-screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+    z-index:200;background:var(--bg);}
+  .login-box{background:var(--panel);border:1px solid var(--line-2);border-radius:var(--radius);
+    padding:40px 36px;width:100%;max-width:380px;text-align:center;
+    box-shadow:var(--shadow);}
+  .login-skull{font-size:52px;margin-bottom:12px;}
+  .login-title{font-family:'Creepster',system-ui;font-size:32px;color:var(--green-bright);
+    letter-spacing:.03em;margin-bottom:4px;text-shadow:0 0 20px rgba(169,217,46,.4);}
+  .login-sub{color:var(--muted);font-size:13px;margin-bottom:28px;}
+  .login-input{width:100%;background:var(--bg2);border:1px solid var(--line-2);
+    color:var(--ink);font-family:'Space Mono',monospace;font-size:15px;
+    padding:12px 16px;border-radius:10px;outline:none;text-align:center;
+    letter-spacing:.1em;transition:.2s;}
+  .login-input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(169,217,46,.12);}
+  .login-btn{margin-top:14px;width:100%;background:var(--green);color:#0a0c07;
+    font-family:'Anton',sans-serif;font-size:15px;letter-spacing:.08em;
+    border:none;padding:13px;border-radius:10px;cursor:pointer;transition:.15s;}
+  .login-btn:hover{background:var(--green-bright);}
+  .login-err{color:var(--blood-bright);font-size:13px;margin-top:10px;min-height:18px;}
+
+  /* DASHBOARD */
+  .dashboard{display:none;min-height:100vh;padding-bottom:80px;}
+  .dashboard.show{display:block;}
+
+  /* NAV */
+  .site-nav{position:sticky;top:0;z-index:100;
+    background:rgba(10,12,7,.92);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);padding:0 20px;}
+  .nav-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:10px;height:54px;}
+  .nav-logo{font-family:'Creepster',system-ui;font-size:22px;color:var(--green-bright);
+    letter-spacing:.03em;text-decoration:none;flex:none;
+    text-shadow:0 0 14px rgba(169,217,46,.4);}
+  .nav-badge{background:var(--blood);color:#fff;font-family:'Anton',sans-serif;
+    font-size:11px;padding:2px 8px;border-radius:20px;letter-spacing:.06em;}
+  .nav-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+  .nav-back{font-family:'Anton',sans-serif;font-size:12px;letter-spacing:.05em;
+    text-transform:uppercase;color:var(--muted);text-decoration:none;
+    padding:7px 12px;border:1px solid var(--line);border-radius:8px;transition:.15s;}
+  .nav-back:hover{color:var(--green);border-color:var(--green);}
+  .logout-btn{background:transparent;border:1px solid var(--line);color:var(--muted-2);
+    font-size:13px;padding:6px 12px;border-radius:8px;cursor:pointer;
+    font-family:'Barlow',sans-serif;transition:.15s;}
+  .logout-btn:hover{color:var(--blood-bright);border-color:var(--blood);}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:32px 16px;}
+
+  /* HEADER */
+  .dash-header{margin-bottom:32px;}
+  .dash-title{font-family:'Creepster',system-ui;font-size:42px;color:var(--green-bright);
+    text-shadow:0 0 24px rgba(169,217,46,.3);line-height:1;}
+  .dash-sub{color:var(--muted);font-size:14px;margin-top:4px;}
+  .last-refresh{color:var(--muted-2);font-size:12px;font-family:'Space Mono',monospace;}
+
+  /* STAT CARDS */
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:32px;}
+  .stat-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px;position:relative;overflow:hidden;}
+  .stat-card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;}
+  .stat-card.green::before{background:var(--green);}
+  .stat-card.blood::before{background:var(--blood);}
+  .stat-card.yellow::before{background:var(--yellow);}
+  .stat-card.teal::before{background:var(--teal);}
+  .stat-card.purple::before{background:#9b6dff;}
+  .stat-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);
+    font-family:'Anton',sans-serif;margin-bottom:8px;}
+  .stat-val{font-family:'Anton',sans-serif;font-size:38px;letter-spacing:-.01em;line-height:1;}
+  .stat-card.green .stat-val{color:var(--green-bright);}
+  .stat-card.blood .stat-val{color:var(--blood-bright);}
+  .stat-card.yellow .stat-val{color:var(--yellow);}
+  .stat-card.teal .stat-val{color:var(--teal);}
+  .stat-card.purple .stat-val{color:#9b6dff;}
+  .stat-sub{font-size:12px;color:var(--muted-2);margin-top:4px;}
+
+  /* SECTION */
+  .section{margin-bottom:32px;}
+  .section-title{font-family:'Anton',sans-serif;font-size:16px;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--green);margin-bottom:14px;
+    display:flex;align-items:center;gap:8px;}
+  .section-title::after{content:"";flex:1;height:1px;background:var(--line);}
+
+  /* PAGE BREAKDOWN */
+  .page-bars{display:flex;flex-direction:column;gap:10px;}
+  .page-bar-row{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;}
+  .page-bar-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .page-bar-name{font-family:'Anton',sans-serif;font-size:14px;letter-spacing:.04em;color:var(--ink);}
+  .page-bar-count{font-family:'Space Mono',monospace;font-size:13px;color:var(--green);}
+  .page-bar-track{background:var(--bg2);border-radius:4px;height:6px;overflow:hidden;}
+  .page-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--green-bright));
+    border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+  .page-bar-pct{font-size:11px;color:var(--muted-2);margin-top:4px;font-family:'Space Mono',monospace;}
+
+  /* RECENT VISITS TABLE */
+  .visits-table{width:100%;border-collapse:collapse;}
+  .visits-table th{font-family:'Anton',sans-serif;font-size:11px;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--muted);padding:8px 12px;text-align:left;
+    border-bottom:1px solid var(--line);}
+  .visits-table td{padding:10px 12px;border-bottom:1px solid var(--line);font-size:13px;
+    font-family:'Space Mono',monospace;color:var(--ink);}
+  .visits-table tr:last-child td{border-bottom:none;}
+  .visits-table tr:hover td{background:var(--panel-2);}
+  .page-pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;
+    font-family:'Anton',sans-serif;letter-spacing:.04em;}
+  .pill-HOME{background:rgba(169,217,46,.15);color:var(--green);}
+  .pill-BEATS{background:rgba(216,58,43,.15);color:var(--blood-bright);}
+  .pill-CHALLENGE{background:rgba(236,200,58,.15);color:var(--yellow);}
+  .pill-PIANO_LAB{background:rgba(63,182,168,.15);color:var(--teal);}
+  .pill-SAMPLE_CHOP{background:rgba(155,109,255,.15);color:#9b6dff;}
+  .pill-UNKNOWN{background:rgba(139,143,116,.15);color:var(--muted);}
+
+  /* CHART */
+  .chart-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px;overflow-x:auto;}
+  .chart-canvas-wrap{min-width:400px;}
+  canvas{display:block;}
+
+  /* TWO COL */
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:680px){.two-col{grid-template-columns:1fr;}}
+
+  /* LOADING / EMPTY */
+  .loading{color:var(--muted);font-size:14px;padding:24px;text-align:center;
+    font-family:'Space Mono',monospace;}
+  .empty{color:var(--muted-2);font-size:13px;padding:20px;text-align:center;}
+
+  /* REFRESH BTN */
+  .refresh-btn{background:var(--panel-2);border:1px solid var(--line);color:var(--green);
+    font-family:'Anton',sans-serif;font-size:12px;letter-spacing:.06em;text-transform:uppercase;
+    padding:8px 16px;border-radius:8px;cursor:pointer;transition:.15s;}
+  .refresh-btn:hover{background:var(--panel-3);border-color:var(--green);}
+
+  /* RANGE PILLS */
+  .range-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+  .range-pill{background:var(--panel-2);border:1px solid var(--line);color:var(--muted);
+    font-family:'Anton',sans-serif;font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+    padding:6px 12px;border-radius:20px;cursor:pointer;transition:.15s;}
+  .range-pill:hover{color:var(--ink);}
+  .range-pill.active{background:var(--panel-3);border-color:var(--green);color:var(--green);}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-skull">💀</div>
+    <div class="login-title">Gritty Grave</div>
+    <div class="login-sub">Admin access only. Enter the password.</div>
+    <input class="login-input" type="password" id="loginInput" placeholder="••••••••••••" autocomplete="current-password"/>
+    <button class="login-btn" id="loginBtn">ENTER THE GRAVE</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboard">
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a class="nav-logo" href="index.html">Gritty Grave</a>
+      <span class="nav-badge">ADMIN</span>
+      <div class="nav-right">
+        <a class="nav-back" href="index.html">← Back to Site</a>
+        <button class="logout-btn" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <div class="dash-header">
+      <div class="dash-title">📊 Analytics</div>
+      <div class="dash-sub">Only you can see this. Not linked anywhere on the site.</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
+        <span class="last-refresh" id="lastRefresh">Loading...</span>
+        <button class="refresh-btn" id="refreshBtn">↺ Refresh</button>
+      </div>
+    </div>
+
+    <!-- RANGE FILTER -->
+    <div class="range-pills">
+      <div class="range-pill active" data-days="1">Today</div>
+      <div class="range-pill" data-days="7">7 Days</div>
+      <div class="range-pill" data-days="30">30 Days</div>
+      <div class="range-pill" data-days="90">90 Days</div>
+      <div class="range-pill" data-days="0">All Time</div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stat-grid" id="statGrid">
+      <div class="stat-card green">
+        <div class="stat-label">Total Visits</div>
+        <div class="stat-val" id="statTotal">—</div>
+        <div class="stat-sub">in selected period</div>
+      </div>
+      <div class="stat-card blood">
+        <div class="stat-label">Today</div>
+        <div class="stat-val" id="statToday">—</div>
+        <div class="stat-sub">visits so far</div>
+      </div>
+      <div class="stat-card yellow">
+        <div class="stat-label">This Week</div>
+        <div class="stat-val" id="statWeek">—</div>
+        <div class="stat-sub">last 7 days</div>
+      </div>
+      <div class="stat-card teal">
+        <div class="stat-label">Most Visited</div>
+        <div class="stat-val" id="statTop" style="font-size:22px;padding-top:6px;">—</div>
+        <div class="stat-sub">top page</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-label">All Time</div>
+        <div class="stat-val" id="statAllTime">—</div>
+        <div class="stat-sub">total visits ever</div>
+      </div>
+    </div>
+
+    <!-- PAGE BREAKDOWN -->
+    <div class="section">
+      <div class="section-title">Page Breakdown</div>
+      <div class="page-bars" id="pageBars"><div class="loading">Loading...</div></div>
+    </div>
+
+    <!-- CHART + DAILY -->
+    <div class="section">
+      <div class="section-title">Visits Over Time</div>
+      <div class="chart-wrap">
+        <div class="chart-canvas-wrap">
+          <canvas id="chartCanvas" height="180"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECENT VISITS -->
+    <div class="section">
+      <div class="section-title">Recent Visits</div>
+      <div style="background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;">
+        <div id="recentWrap"><div class="loading">Loading...</div></div>
+      </div>
+    </div>
+
+  </div><!-- /wrap -->
+</div><!-- /dashboard -->
+
+<script>
+/* ============================================================
+   CONFIG
+   ============================================================ */
+const SUPABASE_URL = 'https://gkglkyrnbgzjudjgqtye.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrZ2xreXJuYmd6anVkamdxdHllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NDAxNTIsImV4cCI6MjA5NTMxNjE1Mn0.Qmz3ni55c8evWaPjIEONeNiicQnqojBES-LlHOZafOo';
+const ADMIN_PASSWORD = 'grittygrave';
+
+const PAGE_COLORS = {
+  HOME:       '#a9d92e',
+  BEATS:      '#d83a2b',
+  CHALLENGE:  '#ecc83a',
+  PIANO_LAB:  '#3fb6a8',
+  SAMPLE_CHOP:'#9b6dff',
+};
+
+/* ============================================================
+   AUTH
+   ============================================================ */
+let authed = false;
+let currentDays = 1;
+
+document.getElementById('loginBtn').addEventListener('click', tryLogin);
+document.getElementById('loginInput').addEventListener('keydown', e => { if(e.key==='Enter') tryLogin(); });
+
+function tryLogin(){
+  const pw = document.getElementById('loginInput').value.trim();
+  if(pw === ADMIN_PASSWORD){
+    authed = true;
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').classList.add('show');
+    loadAll();
+  } else {
+    const err = document.getElementById('loginErr');
+    err.textContent = 'Wrong password. Try again.';
+    document.getElementById('loginInput').value = '';
+    setTimeout(()=>{ err.textContent=''; }, 3000);
+  }
+}
+
+document.getElementById('logoutBtn').addEventListener('click', ()=>{
+  authed = false;
+  document.getElementById('dashboard').classList.remove('show');
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginInput').value = '';
+});
+
+/* ============================================================
+   SUPABASE FETCH
+   ============================================================ */
+async function sbFetch(path){
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+    headers:{
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY
+    }
+  });
+  if(!res.ok) throw new Error('Supabase error: ' + res.status);
+  return res.json();
+}
+
+/* ============================================================
+   RANGE FILTER
+   ============================================================ */
+document.querySelectorAll('.range-pill').forEach(pill=>{
+  pill.addEventListener('click', ()=>{
+    document.querySelectorAll('.range-pill').forEach(p=>p.classList.remove('active'));
+    pill.classList.add('active');
+    currentDays = parseInt(pill.dataset.days);
+    loadAll();
+  });
+});
+
+document.getElementById('refreshBtn').addEventListener('click', loadAll);
+
+/* ============================================================
+   LOAD ALL DATA
+   ============================================================ */
+async function loadAll(){
+  document.getElementById('lastRefresh').textContent = 'Refreshing...';
+  try {
+    // Fetch all data — we'll filter client-side for flexibility
+    const all = await sbFetch('page_views?select=page,visited_at&order=visited_at.desc&limit=5000');
+    renderDashboard(all);
+    document.getElementById('lastRefresh').textContent =
+      'Last updated: ' + new Date().toLocaleTimeString();
+  } catch(e){
+    document.getElementById('lastRefresh').textContent = 'Error loading data — check Supabase';
+    console.error(e);
+  }
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function renderDashboard(all){
+  const now = new Date();
+
+  // Filter by selected range
+  const filtered = currentDays === 0 ? all : all.filter(r=>{
+    const d = new Date(r.visited_at);
+    return (now - d) < currentDays * 86400000;
+  });
+
+  // Today
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const todayCount = all.filter(r=> new Date(r.visited_at) >= todayStart).length;
+
+  // This week
+  const weekStart = new Date(now - 7*86400000);
+  const weekCount = all.filter(r=> new Date(r.visited_at) >= weekStart).length;
+
+  // Stat cards
+  document.getElementById('statTotal').textContent    = filtered.length.toLocaleString();
+  document.getElementById('statToday').textContent    = todayCount.toLocaleString();
+  document.getElementById('statWeek').textContent     = weekCount.toLocaleString();
+  document.getElementById('statAllTime').textContent  = all.length.toLocaleString();
+
+  // Top page
+  const pageCounts = countBy(filtered, 'page');
+  const topPage = Object.entries(pageCounts).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('statTop').textContent = topPage ? topPage[0].replace('_',' ') : '—';
+
+  // Page bars
+  renderPageBars(pageCounts, filtered.length);
+
+  // Chart
+  renderChart(filtered);
+
+  // Recent visits
+  renderRecent(all.slice(0, 50));
+}
+
+function countBy(arr, key){
+  return arr.reduce((acc,r)=>{ acc[r[key]] = (acc[r[key]]||0)+1; return acc; }, {});
+}
+
+/* PAGE BARS */
+function renderPageBars(pageCounts, total){
+  const container = document.getElementById('pageBars');
+  if(!total){ container.innerHTML = '<div class="empty">No visits in this period yet.</div>'; return; }
+
+  const sorted = Object.entries(pageCounts).sort((a,b)=>b[1]-a[1]);
+  container.innerHTML = sorted.map(([page, count])=>{
+    const pct = total > 0 ? Math.round(count/total*100) : 0;
+    const color = PAGE_COLORS[page] || '#8b8f74';
+    return `
+      <div class="page-bar-row">
+        <div class="page-bar-top">
+          <span class="page-bar-name">${page.replace('_',' ')}</span>
+          <span class="page-bar-count">${count.toLocaleString()} visits</span>
+        </div>
+        <div class="page-bar-track">
+          <div class="page-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,${color}99,${color})"></div>
+        </div>
+        <div class="page-bar-pct">${pct}% of total</div>
+      </div>`;
+  }).join('');
+}
+
+/* CHART */
+function renderChart(data){
+  const canvas = document.getElementById('chartCanvas');
+  const wrap = canvas.parentElement;
+  canvas.width = wrap.clientWidth || 600;
+
+  // Group by day
+  const dayMap = {};
+  data.forEach(r=>{
+    const d = new Date(r.visited_at);
+    const key = d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    dayMap[key] = (dayMap[key]||0)+1;
+  });
+
+  // Build last N days
+  const daysToShow = currentDays === 0 ? 30 : Math.min(currentDays, 30);
+  const labels = [];
+  const values = [];
+  for(let i=daysToShow-1;i>=0;i--){
+    const d = new Date(Date.now() - i*86400000);
+    const key = d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    labels.push(key);
+    values.push(dayMap[key]||0);
+  }
+
+  if(currentDays === 0){
+    // Show all available dates instead
+    const allDates = Object.keys(dayMap).sort((a,b)=>new Date(a)-new Date(b));
+    labels.length=0; values.length=0;
+    allDates.forEach(k=>{ labels.push(k); values.push(dayMap[k]); });
+  }
+
+  drawBarChart(canvas, labels, values);
+}
+
+function drawBarChart(canvas, labels, values){
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const pad = {top:20, right:20, bottom:40, left:44};
+  const chartW = W - pad.left - pad.right;
+  const chartH = H - pad.top - pad.bottom;
+  const maxVal = Math.max(...values, 1);
+
+  ctx.clearRect(0,0,W,H);
+
+  // Grid lines
+  ctx.strokeStyle = '#2e3a1d';
+  ctx.lineWidth = 1;
+  for(let i=0;i<=4;i++){
+    const y = pad.top + chartH - (chartH * i/4);
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W-pad.right, y); ctx.stroke();
+    ctx.fillStyle = '#5f6549';
+    ctx.font = '10px Space Mono, monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(Math.round(maxVal*i/4), pad.left-6, y+4);
+  }
+
+  // Bars
+  const barW = Math.max(4, Math.min(40, chartW / labels.length - 3));
+  const step = chartW / labels.length;
+
+  labels.forEach((label, i)=>{
+    const x = pad.left + i * step + step/2;
+    const bh = values[i] / maxVal * chartH;
+    const y = pad.top + chartH - bh;
+
+    // Bar gradient
+    const grad = ctx.createLinearGradient(0, y, 0, y+bh);
+    grad.addColorStop(0, '#c4f23a');
+    grad.addColorStop(1, '#a9d92e44');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.roundRect(x - barW/2, y, barW, bh, [3,3,0,0]);
+    ctx.fill();
+
+    // Label (every Nth)
+    const every = Math.ceil(labels.length / 10);
+    if(i % every === 0 || i === labels.length-1){
+      ctx.fillStyle = '#5f6549';
+      ctx.font = '10px Space Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, x, H - pad.bottom + 14);
+    }
+  });
+}
+
+/* RECENT VISITS */
+function renderRecent(rows){
+  const wrap = document.getElementById('recentWrap');
+  if(!rows.length){ wrap.innerHTML = '<div class="empty">No visits recorded yet.</div>'; return; }
+  wrap.innerHTML = `
+    <table class="visits-table">
+      <thead>
+        <tr>
+          <th>Page</th>
+          <th>Time</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(r=>{
+          const d = new Date(r.visited_at);
+          const pillClass = 'pill-' + (r.page||'UNKNOWN');
+          return `<tr>
+            <td><span class="page-pill ${pillClass}">${(r.page||'?').replace('_',' ')}</span></td>
+            <td>${d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</td>
+            <td>${d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+</script>
+</body>
+</html>

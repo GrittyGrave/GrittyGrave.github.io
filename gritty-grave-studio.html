@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Studio — Gritty Grave</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Anton&family=Barlow:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0a0c07;--bg2:#0e1109;--panel:#13160d;--panel-2:#1b2012;--panel-3:#222a16;
+  --line:#2e3a1d;--line-2:#41502a;
+  --green:#a9d92e;--green-bright:#c4f23a;--green-soft:#d6e98a;
+  --blood:#d83a2b;--blood-bright:#ff5747;--yellow:#ecc83a;--teal:#3fb6a8;
+  --ink:#e9e7d6;--muted:#8b8f74;--muted-2:#5f6549;
+  --radius:13px;--shadow:0 20px 55px -18px rgba(0,0,0,.9);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100%;}
+body{background:var(--bg);color:var(--ink);font-family:'Barlow',sans-serif;
+  -webkit-font-smoothing:antialiased;line-height:1.55;overflow-x:hidden;}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.07;
+  background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEWFhYWDg4N3d3dtbW17e3t1dXWBgYGHh4t5eXlzc3OLi4ubm5uVlZWPj4+NjY19fX2JiYl/f39ra2uRkZGZmZlpaWmXl5dvb29xcXGTk5NnZ2c8TV1mAAAAG3RSTlNAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEB9VoGNAAAASElEQVR42u3BMQEAAADCoPVP7WsIoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeAMBxAABPQAAAABJRU5ErkJggg==");
+  background-repeat:repeat;background-size:100px 100px;mix-blend-mode:overlay;}
+::selection{background:var(--green);color:#11150a;}
+.wrap{max-width:1000px;margin:0 auto;padding:0 16px 100px;position:relative;z-index:1;}
+
+/* NAV */
+.site-nav{position:sticky;top:0;z-index:100;background:rgba(10,12,7,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:0 20px;}
+.nav-inner{max-width:1080px;margin:0 auto;display:flex;align-items:center;gap:6px;height:54px;}
+.nav-logo{font-family:'Creepster',system-ui;font-size:22px;color:var(--green-bright);letter-spacing:.03em;text-decoration:none;flex:none;margin-right:8px;text-shadow:0 0 14px rgba(169,217,46,.4);}
+.nav-links{display:flex;gap:3px;flex:1;overflow-x:auto;}
+.nav-links::-webkit-scrollbar{height:0;}
+.nav-link{font-family:'Anton',sans-serif;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:8px 12px;border-radius:8px;white-space:nowrap;transition:.15s;border:1px solid transparent;}
+.nav-link:hover{color:var(--ink);background:var(--panel-2);}
+.nav-link.active{color:var(--green);border-color:var(--line);background:var(--panel);}
+.nav-admin-btn{background:transparent;border:1px solid var(--line);color:var(--muted-2);font-size:14px;width:34px;height:34px;border-radius:8px;cursor:pointer;transition:.15s;flex:none;margin-left:4px;}
+.nav-admin-btn:hover{color:var(--green);border-color:var(--green);}
+.nav-admin-btn.logged-in{color:var(--green);border-color:var(--green);background:var(--panel);}
+
+/* PAGE HEADER */
+.page-hero{padding:36px 0 24px;}
+.page-title{font-family:'Creepster',system-ui;font-size:52px;color:var(--green-bright);line-height:1;text-shadow:0 0 30px rgba(169,217,46,.3);}
+.page-sub{color:var(--muted);font-size:15px;margin-top:6px;max-width:560px;}
+
+/* SECTION DIVIDER */
+.section-head{display:flex;align-items:center;gap:12px;margin:36px 0 20px;}
+.section-head h2{font-family:'Creepster',system-ui;font-size:32px;color:var(--green-bright);line-height:1;white-space:nowrap;}
+.section-head .divider{flex:1;height:1px;background:var(--line-2);}
+.section-badge{font-family:'Anton',sans-serif;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:20px;white-space:nowrap;}
+.badge-green{background:rgba(169,217,46,.15);color:var(--green);border:1px solid rgba(169,217,46,.3);}
+.badge-blood{background:rgba(216,58,43,.15);color:var(--blood-bright);border:1px solid rgba(216,58,43,.3);}
+
+/* INSTRUCTIONS BOX */
+.how-to{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--green);border-radius:var(--radius);padding:16px 20px;margin-bottom:24px;}
+.how-to-title{font-family:'Anton',sans-serif;font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--green);margin-bottom:10px;}
+.how-to ol,.how-to ul{padding-left:18px;display:flex;flex-direction:column;gap:5px;}
+.how-to li{font-size:13px;color:var(--muted);line-height:1.5;}
+.how-to li strong{color:var(--ink);}
+.how-to-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:600px){.how-to-cols{grid-template-columns:1fr;}}
+
+/* MODE TABS */
+.mode-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+.mode-tab{font-family:'Anton',sans-serif;font-size:13px;letter-spacing:.06em;text-transform:uppercase;padding:10px 20px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer;transition:.15s;}
+.mode-tab:hover{color:var(--ink);border-color:var(--line-2);}
+.mode-tab.active{color:#0a0c07;border-color:transparent;}
+.mode-tab[data-mode="chords"].active{background:var(--green);}
+.mode-tab[data-mode="melody"].active{background:var(--teal);}
+.mode-tab[data-mode="drums"].active{background:var(--blood);}
+
+/* GENERATOR PANEL */
+.gen-panel{display:none;}
+.gen-panel.active{display:block;}
+
+.controls-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:16px;}
+.ctrl{display:flex;flex-direction:column;gap:6px;}
+.ctrl label{font-family:'Anton',sans-serif;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);}
+select{background:var(--bg2);border:1px solid var(--line-2);color:var(--ink);font-family:'Barlow',sans-serif;font-size:13px;padding:8px 10px;border-radius:8px;outline:none;cursor:pointer;transition:.15s;width:100%;}
+select:focus{border-color:var(--green);}
+input[type=range]{-webkit-appearance:none;height:4px;border-radius:2px;background:var(--line-2);outline:none;cursor:pointer;width:100%;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--green);cursor:pointer;}
+.range-val{font-family:'Space Mono',monospace;font-size:12px;color:var(--green);text-align:right;}
+
+/* GENERATE BUTTON */
+.gen-btn{width:100%;font-family:'Anton',sans-serif;font-size:16px;letter-spacing:.08em;text-transform:uppercase;padding:16px;border-radius:12px;border:none;cursor:pointer;transition:.15s;margin-bottom:20px;}
+.gen-btn-chords{background:var(--green);color:#0a0c07;}
+.gen-btn-chords:hover{background:var(--green-bright);}
+.gen-btn-melody{background:var(--teal);color:#0a0c07;}
+.gen-btn-melody:hover{background:#4fd4c5;}
+.gen-btn-drums{background:var(--blood);color:#fff;}
+.gen-btn-drums:hover{background:var(--blood-bright);}
+
+/* RESULT CARD */
+.result-card{background:var(--panel);border:1px solid var(--line-2);border-radius:var(--radius);padding:20px;display:none;margin-bottom:8px;}
+.result-card.show{display:block;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+.result-title{font-family:'Anton',sans-serif;font-size:18px;letter-spacing:.04em;color:var(--ink);}
+.result-meta{font-family:'Space Mono',monospace;font-size:12px;color:var(--muted);}
+
+/* MIDI DISPLAY */
+.midi-display{background:var(--bg2);border-radius:10px;padding:14px 16px;margin-bottom:16px;min-height:60px;overflow-x:auto;}
+.midi-chord-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.chord-pill{background:var(--panel-3);border:1px solid var(--line-2);border-radius:8px;padding:6px 14px;font-family:'Space Mono',monospace;font-size:13px;color:var(--green);}
+.chord-pill .chord-num{font-size:10px;color:var(--muted);display:block;margin-bottom:2px;}
+.drum-grid-display{display:grid;gap:4px;}
+.drum-row-d{display:flex;gap:3px;align-items:center;}
+.drum-label-d{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);width:50px;flex-shrink:0;text-align:right;padding-right:8px;}
+.drum-step-d{width:22px;height:22px;border-radius:4px;background:var(--panel-3);border:1px solid var(--line);}
+.drum-step-d.on{background:var(--blood);border-color:var(--blood-bright);}
+.drum-step-d.on.accent{background:var(--blood-bright);}
+
+/* RESULT ACTIONS */
+.result-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.drag-btn{display:flex;align-items:center;gap:8px;background:var(--panel-3);border:2px dashed var(--line-2);color:var(--muted);font-family:'Anton',sans-serif;font-size:13px;letter-spacing:.05em;text-transform:uppercase;padding:12px 20px;border-radius:10px;cursor:grab;transition:.15s;user-select:none;flex:1;min-width:160px;justify-content:center;}
+.drag-btn:hover{border-color:var(--green);color:var(--green);}
+.drag-btn:active{cursor:grabbing;}
+.drag-btn.dragging{opacity:.6;border-color:var(--green-bright);}
+.dl-btn{display:flex;align-items:center;gap:8px;background:var(--panel-2);border:1px solid var(--line-2);color:var(--ink);font-family:'Anton',sans-serif;font-size:13px;letter-spacing:.05em;text-transform:uppercase;padding:12px 20px;border-radius:10px;cursor:pointer;transition:.15s;text-decoration:none;}
+.dl-btn:hover{border-color:var(--green);color:var(--green);}
+.send-seq-btn{display:flex;align-items:center;gap:8px;background:rgba(216,58,43,.15);border:1px solid rgba(216,58,43,.4);color:var(--blood-bright);font-family:'Anton',sans-serif;font-size:13px;letter-spacing:.05em;text-transform:uppercase;padding:12px 20px;border-radius:10px;cursor:pointer;transition:.15s;}
+.send-seq-btn:hover{background:rgba(216,58,43,.25);border-color:var(--blood-bright);}
+.drag-hint{font-size:12px;color:var(--muted-2);margin-top:10px;font-family:'Space Mono',monospace;text-align:center;}
+
+/* ═══════════════════════════
+   SEQUENCER
+═══════════════════════════ */
+.seq-wrapper{background:var(--panel);border:1px solid var(--line-2);border-radius:var(--radius);padding:24px;margin-bottom:24px;}
+
+/* Transport */
+.seq-transport{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--line);}
+.transport-btn{font-family:'Anton',sans-serif;font-size:13px;letter-spacing:.06em;text-transform:uppercase;padding:10px 22px;border-radius:10px;border:none;cursor:pointer;transition:.15s;}
+.btn-play{background:var(--green);color:#0a0c07;}
+.btn-play:hover{background:var(--green-bright);}
+.btn-play.playing{background:var(--blood);color:#fff;}
+.btn-play.playing:hover{background:var(--blood-bright);}
+.btn-stop{background:var(--panel-2);border:1px solid var(--line-2);color:var(--muted);padding:10px 18px;border-radius:10px;cursor:pointer;font-size:16px;transition:.15s;}
+.btn-stop:hover{color:var(--ink);border-color:var(--line-2);}
+.bpm-group{display:flex;align-items:center;gap:8px;margin-left:4px;}
+.bpm-label{font-family:'Anton',sans-serif;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);}
+.bpm-display{font-family:'Space Mono',monospace;font-size:18px;color:var(--green);min-width:44px;text-align:center;}
+.bpm-arrow{background:var(--panel-2);border:1px solid var(--line);color:var(--muted);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:.15s;border:none;}
+.bpm-arrow:hover{color:var(--green);}
+.swing-group{display:flex;align-items:center;gap:8px;}
+.swing-label{font-family:'Anton',sans-serif;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);}
+.swing-sel{background:var(--bg2);border:1px solid var(--line-2);color:var(--ink);font-family:'Barlow',sans-serif;font-size:13px;padding:6px 8px;border-radius:8px;outline:none;}
+.seq-dl-btn{margin-left:auto;display:flex;align-items:center;gap:6px;background:var(--panel-2);border:1px solid var(--line-2);color:var(--ink);font-family:'Anton',sans-serif;font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:9px 16px;border-radius:10px;cursor:pointer;transition:.15s;text-decoration:none;}
+.seq-dl-btn:hover{border-color:var(--green);color:var(--green);}
+
+/* Step grid */
+.seq-grid{display:flex;flex-direction:column;gap:6px;}
+.seq-row{display:flex;align-items:center;gap:0;}
+.seq-row-label{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);width:52px;flex-shrink:0;text-align:right;padding-right:10px;line-height:1.2;}
+.seq-row-label .note-name{color:var(--green);font-size:11px;display:block;}
+.seq-steps{display:flex;gap:3px;flex:1;flex-wrap:nowrap;}
+.seq-step{width:100%;max-width:38px;aspect-ratio:1;border-radius:6px;background:var(--bg2);border:1px solid var(--line);cursor:pointer;transition:.08s;position:relative;flex:1;}
+.seq-step:hover{border-color:var(--line-2);background:var(--panel-2);}
+.seq-step.on{border-color:transparent;}
+.seq-step.active-play{box-shadow:0 0 0 2px var(--green-bright);}
+/* Beat group separator */
+.seq-step:nth-child(4n+1){margin-left:3px;}
+.seq-step:first-child{margin-left:0;}
+/* Row colors */
+.seq-row[data-row="kick"]   .seq-step.on{background:var(--blood-bright);}
+.seq-row[data-row="snare"]  .seq-step.on{background:#ff9f47;}
+.seq-row[data-row="hhc"]    .seq-step.on{background:var(--yellow);}
+.seq-row[data-row="hho"]    .seq-step.on{background:var(--teal);}
+.seq-row[data-row="melody"] .seq-step.on{background:var(--green);}
+.seq-row[data-row="bass"]   .seq-step.on{background:#9b6dff;}
+
+/* Drop zone */
+.seq-drop-zone{border:2px dashed var(--line-2);border-radius:10px;padding:12px;text-align:center;font-family:'Space Mono',monospace;font-size:12px;color:var(--muted-2);margin-bottom:16px;transition:.2s;}
+.seq-drop-zone.dragover{border-color:var(--green);color:var(--green);background:rgba(169,217,46,.05);}
+
+/* Note picker for melody/bass row */
+.note-picker{display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;}
+.note-pick-btn{font-family:'Space Mono',monospace;font-size:10px;padding:3px 7px;border-radius:4px;border:1px solid var(--line);background:var(--panel-2);color:var(--muted);cursor:pointer;transition:.12s;}
+.note-pick-btn:hover,.note-pick-btn.active{background:var(--panel-3);border-color:var(--green);color:var(--green);}
+
+/* Clear row button */
+.seq-row-clear{background:transparent;border:none;color:var(--muted-2);font-size:11px;cursor:pointer;padding:2px 6px;border-radius:4px;transition:.15s;flex-shrink:0;}
+.seq-row-clear:hover{color:var(--blood-bright);}
+
+/* MODAL & TOAST */
+.g-modal{position:fixed;inset:0;background:rgba(5,6,3,.86);z-index:500;display:none;align-items:center;justify-content:center;}
+.g-modal.show{display:flex;}
+.g-modal-box{background:var(--panel);border:1px solid var(--line-2);border-radius:var(--radius);width:100%;max-width:380px;overflow:hidden;}
+.g-modal-head{display:flex;align-items:center;gap:10px;padding:16px;border-bottom:1px solid var(--line);}
+.g-modal-head h3{font-family:'Anton',sans-serif;font-size:18px;letter-spacing:.03em;flex:1;}
+.g-modal-x{background:var(--panel-2);border:1px solid var(--line);color:var(--muted);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;}
+.g-modal-x:hover{color:var(--blood-bright);}
+.g-modal-body{padding:16px;}
+.g-input{width:100%;background:var(--bg2);border:1px solid var(--line-2);color:var(--ink);font-family:'Barlow',sans-serif;font-size:14px;padding:10px 12px;border-radius:8px;outline:none;}
+.g-input:focus{border-color:var(--green);}
+.g-err{color:var(--blood-bright);font-size:12px;margin-top:6px;min-height:16px;}
+.g-save{width:100%;background:var(--green);color:#0a0c07;font-family:'Anton',sans-serif;font-size:14px;letter-spacing:.06em;border:none;padding:11px;border-radius:8px;cursor:pointer;margin-top:10px;transition:.15s;}
+.g-save:hover{background:var(--green-bright);}
+.g-tabs{display:flex;gap:4px;margin-bottom:14px;}
+.g-tab{flex:1;background:var(--panel-2);border:1px solid var(--line);color:var(--muted);font-family:'Anton',sans-serif;font-size:12px;letter-spacing:.05em;padding:8px;border-radius:7px;cursor:pointer;text-transform:uppercase;transition:.15s;}
+.g-tab.on{background:var(--panel-3);color:var(--green);border-color:var(--green);}
+.g-panel{display:none;}.g-panel.on{display:block;}
+.g-field{margin-bottom:12px;}.g-field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-family:'Anton',sans-serif;letter-spacing:.04em;text-transform:uppercase;}
+.g-logout{width:100%;background:transparent;border:1px solid var(--line);color:var(--muted);font-family:'Barlow',sans-serif;font-size:13px;padding:9px;border-radius:8px;cursor:pointer;margin-top:12px;transition:.15s;}
+.g-logout:hover{color:var(--blood-bright);border-color:var(--blood);}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel-3);border:1px solid var(--line-2);color:var(--ink);font-size:13px;padding:10px 20px;border-radius:20px;opacity:0;transition:.25s;pointer-events:none;z-index:600;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.bad{background:#2a0e0a;border-color:var(--blood);color:var(--blood-bright);}
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html">Gritty Grave</a>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+      <a class="nav-link" href="beats.html">Beats</a>
+      <a class="nav-link" href="gritty-grave-beat-challenge.html">Challenge</a>
+      <a class="nav-link" href="gritty-grave-piano-lab.html">Piano Lab</a>
+      <a class="nav-link" href="gritty-grave-sample-chop.html">Sample Chop</a>
+      <a class="nav-link active" href="gritty-grave-studio.html">Studio</a>
+      <a class="nav-link" href="downloads.html">Downloads</a>
+    </div>
+    <button class="nav-admin-btn" id="globalAdminBtn" title="Admin">⚙</button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <div class="page-hero">
+    <div class="page-title">🎛️ Gritty Grave Studio</div>
+    <div class="page-sub">Generate MIDI progressions, melodies & rhythms — then load them straight into the sequencer below or drag them into your DAW.</div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       SECTION 1 — MIDI MAKER
+  ═══════════════════════════════════ -->
+  <div class="section-head">
+    <h2>🎹 MIDI Maker</h2>
+    <div class="divider"></div>
+    <span class="section-badge badge-green">Step 1</span>
+  </div>
+
+  <div class="how-to">
+    <div class="how-to-title">📖 How to use the MIDI Maker</div>
+    <div class="how-to-cols">
+      <ol>
+        <li><strong>Pick a tab</strong> — Chords, Melody, or Drums</li>
+        <li><strong>Set your options</strong> — root, scale, vibe, BPM</li>
+        <li><strong>Hit Generate</strong> — a MIDI clip is built instantly</li>
+        <li><strong>Send to Sequencer</strong> — loads the pattern below ↓</li>
+      </ol>
+      <ol start="5">
+        <li><strong>Drag to DAW</strong> — drag the clip straight into Ableton, FL Studio, or MPC Software</li>
+        <li><strong>Download .mid</strong> — save the file to use anywhere</li>
+        <li><strong>Mix &amp; match</strong> — generate drums, send to sequencer, then generate a melody and send that too</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- MODE TABS -->
+  <div class="mode-tabs">
+    <button class="mode-tab active" data-mode="chords">🎵 Chord Progressions</button>
+    <button class="mode-tab" data-mode="melody">🎸 Melody / Lead</button>
+    <button class="mode-tab" data-mode="drums">🥁 Drum Rhythms</button>
+  </div>
+
+  <!-- CHORDS -->
+  <div class="gen-panel active" id="panel-chords">
+    <div class="controls-grid">
+      <div class="ctrl"><label>Root Note</label>
+        <select id="c-root"><option>C</option><option>C#</option><option>D</option><option>D#</option><option>E</option><option>F</option><option>F#</option><option>G</option><option>G#</option><option>A</option><option selected>A#</option><option>B</option></select></div>
+      <div class="ctrl"><label>Scale</label>
+        <select id="c-scale"><option value="minor">Minor</option><option value="major">Major</option><option value="phrygian">Phrygian</option><option value="dorian">Dorian</option><option value="blues">Blues</option><option value="harmonic_minor">Harmonic Minor</option></select></div>
+      <div class="ctrl"><label>Vibe</label>
+        <select id="c-vibe"><option value="dark">Dark / Eerie</option><option value="lofi">Lofi / Chill</option><option value="trap">Trap / Drill</option><option value="afro">Afrobeat</option><option value="random">Random</option></select></div>
+      <div class="ctrl"><label>Bars</label>
+        <select id="c-bars"><option value="2">2 Bars</option><option value="4" selected>4 Bars</option><option value="8">8 Bars</option></select></div>
+      <div class="ctrl"><label>BPM — <span class="range-val" id="c-bpm-val">85</span></label>
+        <input type="range" id="c-bpm" min="60" max="180" value="85"/></div>
+      <div class="ctrl"><label>Chord Type</label>
+        <select id="c-density"><option value="triads">Triads</option><option value="sevenths" selected>7ths</option><option value="extended">9ths / Extended</option></select></div>
+    </div>
+    <button class="gen-btn gen-btn-chords" id="gen-chords-btn">⚡ Generate Progression</button>
+    <div class="result-card" id="result-chords">
+      <div class="result-header">
+        <div><div class="result-title" id="chords-title">—</div><div class="result-meta" id="chords-meta">—</div></div>
+      </div>
+      <div class="midi-display" id="chords-display"></div>
+      <div class="result-actions">
+        <div class="drag-btn" id="drag-chords" draggable="true">⠿ Drag to DAW</div>
+        <button class="send-seq-btn" id="send-chords-seq">↓ Send to Sequencer</button>
+        <a class="dl-btn" id="dl-chords" download="gritty-grave-chords.mid">⬇ Download</a>
+      </div>
+      <div class="drag-hint">Drag directly into Ableton, FL Studio, MPC Software, or any DAW</div>
+    </div>
+  </div>
+
+  <!-- MELODY -->
+  <div class="gen-panel" id="panel-melody">
+    <div class="controls-grid">
+      <div class="ctrl"><label>Root Note</label>
+        <select id="m-root"><option>C</option><option>C#</option><option>D</option><option>D#</option><option>E</option><option>F</option><option>F#</option><option>G</option><option>G#</option><option selected>A</option><option>A#</option><option>B</option></select></div>
+      <div class="ctrl"><label>Scale</label>
+        <select id="m-scale"><option value="minor" selected>Minor</option><option value="major">Major</option><option value="phrygian">Phrygian</option><option value="dorian">Dorian</option><option value="blues">Blues</option><option value="pentatonic">Pentatonic Minor</option></select></div>
+      <div class="ctrl"><label>Vibe</label>
+        <select id="m-vibe"><option value="dark">Dark / Eerie</option><option value="lofi">Lofi / Chill</option><option value="trap">Trap / Drill</option><option value="afro">Afrobeat</option><option value="random">Random</option></select></div>
+      <div class="ctrl"><label>Octave</label>
+        <select id="m-octave"><option value="4">Mid (4)</option><option value="5">High (5)</option><option value="3">Low (3)</option></select></div>
+      <div class="ctrl"><label>BPM — <span class="range-val" id="m-bpm-val">90</span></label>
+        <input type="range" id="m-bpm" min="60" max="180" value="90"/></div>
+      <div class="ctrl"><label>Note Density</label>
+        <select id="m-density"><option value="sparse">Sparse</option><option value="medium" selected>Medium</option><option value="busy">Busy</option></select></div>
+    </div>
+    <button class="gen-btn gen-btn-melody" id="gen-melody-btn">⚡ Generate Melody</button>
+    <div class="result-card" id="result-melody">
+      <div class="result-header">
+        <div><div class="result-title" id="melody-title">—</div><div class="result-meta" id="melody-meta">—</div></div>
+      </div>
+      <div class="midi-display" id="melody-display"></div>
+      <div class="result-actions">
+        <div class="drag-btn" id="drag-melody" draggable="true">⠿ Drag to DAW</div>
+        <button class="send-seq-btn" id="send-melody-seq">↓ Send to Sequencer</button>
+        <a class="dl-btn" id="dl-melody" download="gritty-grave-melody.mid">⬇ Download</a>
+      </div>
+      <div class="drag-hint">Drag directly into Ableton, FL Studio, MPC Software, or any DAW</div>
+    </div>
+  </div>
+
+  <!-- DRUMS -->
+  <div class="gen-panel" id="panel-drums">
+    <div class="controls-grid">
+      <div class="ctrl"><label>Style</label>
+        <select id="d-style"><option value="boom_bap">Boom Bap</option><option value="trap">Trap</option><option value="drill">Drill</option><option value="afro">Afrobeat</option><option value="lofi">Lofi</option><option value="random">Random</option></select></div>
+      <div class="ctrl"><label>Bars</label>
+        <select id="d-bars"><option value="1">1 Bar</option><option value="2" selected>2 Bars</option><option value="4">4 Bars</option></select></div>
+      <div class="ctrl"><label>BPM — <span class="range-val" id="d-bpm-val">90</span></label>
+        <input type="range" id="d-bpm" min="60" max="180" value="90"/></div>
+      <div class="ctrl"><label>Swing</label>
+        <select id="d-swing"><option value="0">None</option><option value="0.1">Light</option><option value="0.2" selected>Medium</option><option value="0.35">Heavy</option></select></div>
+      <div class="ctrl"><label>Complexity</label>
+        <select id="d-complexity"><option value="simple">Simple</option><option value="medium" selected>Medium</option><option value="complex">Complex</option></select></div>
+    </div>
+    <button class="gen-btn gen-btn-drums" id="gen-drums-btn">⚡ Generate Rhythm</button>
+    <div class="result-card" id="result-drums">
+      <div class="result-header">
+        <div><div class="result-title" id="drums-title">—</div><div class="result-meta" id="drums-meta">—</div></div>
+      </div>
+      <div class="midi-display" id="drums-display"></div>
+      <div class="result-actions">
+        <div class="drag-btn" id="drag-drums" draggable="true">⠿ Drag to DAW</div>
+        <button class="send-seq-btn" id="send-drums-seq">↓ Send to Sequencer</button>
+        <a class="dl-btn" id="dl-drums" download="gritty-grave-drums.mid">⬇ Download</a>
+      </div>
+      <div class="drag-hint">Drag directly into Ableton, FL Studio, MPC Software, or any DAW</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       SECTION 2 — SEQUENCER
+  ═══════════════════════════════════ -->
+  <div class="section-head">
+    <h2>🥁 Sequencer</h2>
+    <div class="divider"></div>
+    <span class="section-badge badge-blood">Step 2</span>
+  </div>
+
+  <div class="how-to" style="border-left-color:var(--blood);">
+    <div class="how-to-title" style="color:var(--blood-bright);">📖 How to use the Sequencer</div>
+    <div class="how-to-cols">
+      <ul>
+        <li><strong>Click any step</strong> to toggle it on/off</li>
+        <li><strong>Send to Sequencer</strong> from the MIDI Maker above to auto-load a pattern</li>
+        <li><strong>Melody row</strong> — click a step to place a note, then pick the pitch below the grid</li>
+        <li><strong>Adjust BPM</strong> with the ▲▼ arrows or type a value</li>
+      </ul>
+      <ul>
+        <li><strong>Swing</strong> — adds groove to even 8th positions</li>
+        <li><strong>Hit Play ▶</strong> to hear your pattern loop</li>
+        <li><strong>Clear row</strong> — the × button wipes a single row</li>
+        <li><strong>Export .mid</strong> — download the full sequencer pattern as a MIDI file</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="seq-wrapper" id="seqWrapper">
+    <!-- Transport -->
+    <div class="seq-transport">
+      <button class="transport-btn btn-play" id="seqPlayBtn">▶ Play</button>
+      <button class="btn-stop" id="seqStopBtn">⏹</button>
+      <div class="bpm-group">
+        <span class="bpm-label">BPM</span>
+        <button class="bpm-arrow" id="bpmDown">▼</button>
+        <span class="bpm-display" id="seqBpmDisplay">90</span>
+        <button class="bpm-arrow" id="bpmUp">▲</button>
+      </div>
+      <div class="swing-group">
+        <span class="swing-label">Swing</span>
+        <select class="swing-sel" id="seqSwing">
+          <option value="0">Off</option>
+          <option value="0.08">Light</option>
+          <option value="0.18" selected>Med</option>
+          <option value="0.32">Heavy</option>
+        </select>
+      </div>
+      <a class="seq-dl-btn" id="seqExportBtn">⬇ Export .mid</a>
+    </div>
+
+    <!-- Drop Zone -->
+    <div class="seq-drop-zone" id="seqDropZone">⠿ Drop a generated pattern here to load it into the sequencer</div>
+
+    <!-- Grid -->
+    <div class="seq-grid" id="seqGrid"></div>
+
+    <!-- Melody note picker (shown when melody row has steps) -->
+    <div id="melodyNotePickerWrap" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">
+      <div style="font-family:'Anton',sans-serif;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--teal);margin-bottom:8px;">Melody Note Pitch — click a step first, then pick its note</div>
+      <div class="note-picker" id="melodyNotePicker"></div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<!-- ADMIN MODAL -->
+<div class="g-modal" id="globalAdminModal">
+  <div class="g-modal-box">
+    <div class="g-modal-head"><h3 id="gAdminTitle">Admin Login</h3><button class="g-modal-x" id="gAdminClose">✕</button></div>
+    <div class="g-modal-body">
+      <div id="gLoginView">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:10px;">Enter your admin password.</p>
+        <div style="display:flex;gap:8px;">
+          <input class="g-input" id="gPwIn" type="password" placeholder="Password" style="flex:1;"/>
+          <button class="g-save" style="width:auto;padding:0 20px;" id="gLoginBtn">Enter</button>
+        </div>
+        <div class="g-err" id="gLoginErr"></div>
+      </div>
+      <div id="gDashView" style="display:none;">
+        <div class="g-tabs"><button class="g-tab on" data-gtab="bio">Bio</button><button class="g-tab" data-gtab="password">Password</button></div>
+        <div class="g-panel on" id="gpanel-bio">
+          <div class="g-field"><label>Site Bio</label><textarea class="g-input" id="gBioInput" rows="4" placeholder="Write your bio here..."></textarea></div>
+          <button class="g-save" id="gSaveBioBtn">Save Bio</button><div class="g-err" id="gBioErr"></div>
+        </div>
+        <div class="g-panel" id="gpanel-password">
+          <div class="g-field"><label>Current Password</label><input class="g-input" id="gCurPw" type="password"/></div>
+          <div class="g-field"><label>New Password</label><input class="g-input" id="gNewPw" type="password"/></div>
+          <div class="g-field"><label>Confirm</label><input class="g-input" id="gNewPw2" type="password"/></div>
+          <div class="g-err" id="gPwErr"></div>
+          <button class="g-save" id="gSavePwBtn">Change Password</button>
+        </div>
+        <button class="g-logout" id="gLogoutBtn">Log Out</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ════════════════════════════════════════════════
+   MUSIC THEORY DATA
+════════════════════════════════════════════════ */
+const SCALES={
+  minor:[0,2,3,5,7,8,10],major:[0,2,4,5,7,9,11],
+  phrygian:[0,1,3,5,7,8,10],dorian:[0,2,3,5,7,9,10],
+  blues:[0,3,5,6,7,10],harmonic_minor:[0,2,3,5,7,8,11],pentatonic:[0,3,5,7,10]
+};
+const NOTE_NAMES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const ROOT_TO_MIDI={'C':60,'C#':61,'D':62,'D#':63,'E':64,'F':65,'F#':66,'G':67,'G#':68,'A':69,'A#':70,'B':71};
+const CHORD_TYPES={
+  triads:{min:[0,3,7],maj:[0,4,7],dim:[0,3,6]},
+  sevenths:{min:[0,3,7,10],maj:[0,4,7,11],dom7:[0,4,7,10],dim:[0,3,6,9]},
+  extended:{min9:[0,3,7,10,14],maj9:[0,4,7,11,14],dom9:[0,4,7,10,14]}
+};
+const PROG_TEMPLATES={
+  dark:[[0,5],[0,3],[0,5,3,6],[0,6,3,7],[0,5,6,3]],
+  lofi:[[0,3,4,5],[0,5,3,4],[0,2,3,5],[0,4,3,6]],
+  trap:[[0,6,5,3],[0,0,5,6],[0,3,5,6],[0,5,0,6]],
+  afro:[[0,2,4,5],[0,4,2,5],[0,5,2,4],[0,3,5,2]]
+};
+const DRUM_NOTES={kick:36,snare:38,clap:39,hhc:42,hho:46};
+
+/* ════════════════════════════════════════════════
+   MIDI BUILDER
+════════════════════════════════════════════════ */
+function varLen(n){
+  if(n<128)return[n];
+  const b=[];while(n>0){b.unshift(n&0x7f);n>>=7;}
+  for(let i=0;i<b.length-1;i++)b[i]|=0x80;return b;
+}
+function buildMidi(tracks,bpm=90){
+  const tpq=480,tempo=Math.round(60000000/bpm);
+  const tempoB=[(tempo>>16)&0xff,(tempo>>8)&0xff,tempo&0xff];
+  const hdr=[0x4d,0x54,0x68,0x64,0,0,0,6,0,1,0,tracks.length+1,(tpq>>8)&0xff,tpq&0xff];
+  const ttd=[0x00,0xff,0x51,0x03,...tempoB,0x00,0xff,0x2f,0x00];
+  const tt=[0x4d,0x54,0x72,0x6b,(ttd.length>>24)&0xff,(ttd.length>>16)&0xff,(ttd.length>>8)&0xff,ttd.length&0xff,...ttd];
+  const chunks=tracks.map(evs=>{
+    const eb=[];let last=0;
+    evs.sort((a,b)=>a.tick-b.tick);
+    evs.forEach(ev=>{
+      const d=ev.tick-last;last=ev.tick;
+      eb.push(...varLen(d));
+      if(ev.type==='note_on') eb.push(0x90|ev.ch,ev.note,ev.vel);
+      if(ev.type==='note_off')eb.push(0x80|ev.ch,ev.note,0);
+    });
+    eb.push(0x00,0xff,0x2f,0x00);
+    return[0x4d,0x54,0x72,0x6b,(eb.length>>24)&0xff,(eb.length>>16)&0xff,(eb.length>>8)&0xff,eb.length&0xff,...eb];
+  });
+  return new Uint8Array([...hdr,...tt,...chunks.flat()]);
+}
+function midiBlob(bytes){return new Blob([bytes],{type:'audio/midi'});}
+function blobUrl(blob){return URL.createObjectURL(blob);}
+
+/* ════════════════════════════════════════════════
+   GENERATORS
+════════════════════════════════════════════════ */
+function rand(a){return a[Math.floor(Math.random()*a.length)];}
+function randInt(a,b){return a+Math.floor(Math.random()*(b-a+1));}
+
+// Last generated data for "Send to Sequencer"
+let lastDrumGrid=null, lastMelodyNotes=null, lastChordNotes=null;
+
+function generateChords(){
+  const rootName=document.getElementById('c-root').value;
+  const scaleName=document.getElementById('c-scale').value;
+  const vibe=document.getElementById('c-vibe').value;
+  const bars=parseInt(document.getElementById('c-bars').value);
+  const bpm=parseInt(document.getElementById('c-bpm').value);
+  const density=document.getElementById('c-density').value;
+  const rootMidi=ROOT_TO_MIDI[rootName];
+  const scale=SCALES[scaleName];
+  const tpq=480,barTicks=tpq*4;
+  let templates=vibe==='random'?Object.values(PROG_TEMPLATES):PROG_TEMPLATES[vibe]||PROG_TEMPLATES.dark;
+  if(!Array.isArray(templates[0]))templates=[rand(templates)];
+  const template=rand(templates);
+  const progression=[];
+  for(let b=0;b<bars;b++)progression.push(template[b%template.length]);
+  const events=[],chordNames=[],seqNotes=[];
+  progression.forEach((degree,i)=>{
+    const rootOffset=scale[degree%scale.length]||0;
+    const chordRoot=rootMidi+rootOffset;
+    const isMin=[0,2,5].includes(degree%7),isDim=degree%7===6;
+    let intervals;
+    if(density==='triads') intervals=isDim?CHORD_TYPES.triads.dim:isMin?CHORD_TYPES.triads.min:CHORD_TYPES.triads.maj;
+    else if(density==='extended') intervals=isDim?[0,3,6,9]:isMin?CHORD_TYPES.extended.min9:CHORD_TYPES.extended.maj9;
+    else intervals=isDim?CHORD_TYPES.sevenths.dim:isMin?CHORD_TYPES.sevenths.min:CHORD_TYPES.sevenths.dom7;
+    const startTick=i*barTicks,endTick=startTick+barTicks-10;
+    intervals.forEach(iv=>{
+      const note=chordRoot+iv;
+      if(note>=0&&note<=127){
+        events.push({type:'note_on',tick:startTick,note,vel:72,ch:0});
+        events.push({type:'note_off',tick:endTick,note,vel:0,ch:0});
+        seqNotes.push({step:i%16,note});
+      }
+    });
+    const noteName=NOTE_NAMES[chordRoot%12];
+    const q=isDim?'dim':isMin?'m':'';
+    chordNames.push(noteName+q+(density==='sevenths'?'7':density==='extended'?'9':''));
+  });
+  lastChordNotes=seqNotes;
+  const bytes=buildMidi([events],bpm);
+  const blob=midiBlob(bytes);
+  const url=blobUrl(blob);
+  const name=`${rootName} ${scaleName} — ${vibe.charAt(0).toUpperCase()+vibe.slice(1)}`;
+  renderChordsResult(name,chordNames,bpm,bars,url,blob);
+}
+
+function generateMelody(){
+  const rootName=document.getElementById('m-root').value;
+  const scaleName=document.getElementById('m-scale').value;
+  const vibe=document.getElementById('m-vibe').value;
+  const octave=parseInt(document.getElementById('m-octave').value);
+  const bpm=parseInt(document.getElementById('m-bpm').value);
+  const density=document.getElementById('m-density').value;
+  const scale=SCALES[scaleName];
+  const rootMidi=ROOT_TO_MIDI[rootName]+(octave-4)*12;
+  const tpq=480;
+  const durMap={dark:[tpq*2,tpq,tpq,tpq/2],lofi:[tpq*2,tpq*2,tpq,tpq],trap:[tpq/2,tpq/2,tpq/4,tpq/4,tpq],afro:[tpq*0.75,tpq/4,tpq/2,tpq],random:[tpq/2,tpq,tpq*2,tpq/4]};
+  const durs=durMap[vibe]||durMap.random;
+  const noteCount={sparse:8,medium:14,busy:22}[density]||14;
+  const events=[],noteData=[],seqNotes=[];
+  let tick=0,lastDeg=0;
+  for(let i=0;i<noteCount;i++){
+    const motion=Math.random()<0.6?randInt(-2,2):randInt(-4,4);
+    lastDeg=Math.max(0,Math.min(scale.length*2-1,lastDeg+motion));
+    const octShift=Math.floor(lastDeg/scale.length)*12;
+    const note=rootMidi+scale[lastDeg%scale.length]+octShift;
+    if(note<0||note>127){tick+=rand(durs);continue;}
+    const dur=rand(durs),vel=randInt(70,100),rest=Math.random()<0.15?rand(durs):0;
+    events.push({type:'note_on',tick,note,vel,ch:0});
+    events.push({type:'note_off',tick:tick+dur-10,note,vel:0,ch:0});
+    noteData.push({note,tick,dur});
+    const step=Math.floor(i/noteCount*16);
+    seqNotes.push({step:Math.min(step,15),note});
+    tick+=dur+rest;
+  }
+  lastMelodyNotes=seqNotes;
+  const bytes=buildMidi([events],bpm);
+  const blob=midiBlob(bytes);
+  const url=blobUrl(blob);
+  const name=`${rootName} ${scaleName} Melody — ${vibe.charAt(0).toUpperCase()+vibe.slice(1)}`;
+  renderMelodyResult(name,noteData,bpm,url,blob);
+}
+
+function generateDrums(){
+  const style=document.getElementById('d-style').value;
+  const bars=parseInt(document.getElementById('d-bars').value);
+  const bpm=parseInt(document.getElementById('d-bpm').value);
+  const swing=parseFloat(document.getElementById('d-swing').value);
+  const complexity=document.getElementById('d-complexity').value;
+  const tpq=480,step=tpq/4;
+  const patterns={
+    boom_bap:{kick:[1,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0],snare:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],hhc:[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0],hho:[0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1]},
+    trap:{kick:[1,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0],snare:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],hhc:[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],hho:[0,0,0,1,0,0,1,0,0,1,0,0,0,1,0,1]},
+    drill:{kick:[1,0,0,1,0,0,1,0,0,0,1,0,0,1,0,0],snare:[0,0,0,0,1,0,0,1,0,0,0,0,1,0,1,0],hhc:[1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1],hho:[0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0]},
+    afro:{kick:[1,0,0,1,0,0,1,0,1,0,0,0,0,0,1,0],snare:[0,0,1,0,0,1,0,0,0,0,1,0,0,1,0,0],hhc:[1,0,1,1,0,1,0,1,1,0,1,1,0,1,0,1],hho:[0,1,0,0,1,0,1,0,0,1,0,0,1,0,1,0]},
+    lofi:{kick:[1,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0],snare:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,1],hhc:[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0],hho:[0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0]}
+  };
+  const actualStyle=style==='random'?rand(Object.keys(patterns)):style;
+  let pat=JSON.parse(JSON.stringify(patterns[actualStyle]||patterns.boom_bap));
+  if(complexity==='complex'){for(let i=0;i<4;i++){pat.kick[randInt(0,15)]=Math.random()<.5?1:pat.kick[randInt(0,15)];}}
+  else if(complexity==='simple'){for(let i=0;i<16;i++)if(Math.random()<.3)pat.hhc[i]=0;}
+  const events=[],gridData=[];
+  const rowMap=[{key:'kick',note:DRUM_NOTES.kick,label:'KICK'},{key:'snare',note:DRUM_NOTES.snare,label:'SNARE'},{key:'hhc',note:DRUM_NOTES.hhc,label:'HH CL'},{key:'hho',note:DRUM_NOTES.hho,label:'HH OP'}];
+  for(let bar=0;bar<bars;bar++){
+    rowMap.forEach(row=>{
+      const rowSteps=[];
+      for(let s=0;s<16;s++){
+        const on=pat[row.key]&&pat[row.key][s]===1;
+        rowSteps.push(on);
+        if(on){
+          const swingOff=swing>0&&s%2===1?Math.round(swing*step):0;
+          const tick=(bar*16+s)*step+swingOff;
+          const vel=(s===0||s===4||s===8||s===12)?100:randInt(75,95);
+          events.push({type:'note_on',tick,note:row.note,vel,ch:9});
+          events.push({type:'note_off',tick:tick+step-5,note:row.note,vel:0,ch:9});
+        }
+      }
+      if(bar===0)gridData.push({label:row.label,steps:rowSteps,key:row.key});
+    });
+  }
+  lastDrumGrid=gridData;
+  const bytes=buildMidi([events],bpm);
+  const blob=midiBlob(bytes);
+  const url=blobUrl(blob);
+  const name=`${actualStyle.replace('_',' ').toUpperCase()} Rhythm`;
+  renderDrumsResult(name,gridData,bpm,bars,url,blob);
+}
+
+/* ════════════════════════════════════════════════
+   RENDER RESULTS
+════════════════════════════════════════════════ */
+function renderChordsResult(name,chordNames,bpm,bars,url,blob){
+  document.getElementById('chords-title').textContent=name;
+  document.getElementById('chords-meta').textContent=`${bpm} BPM · ${bars} bars · ${chordNames.length} chords`;
+  document.getElementById('chords-display').innerHTML='<div class="midi-chord-row">'+
+    chordNames.map((c,i)=>`<div class="chord-pill"><span class="chord-num">${i+1}</span>${c}</div>`).join('')+'</div>';
+  setupDragDownload('chords',url,blob,name);
+  document.getElementById('result-chords').classList.add('show');
+}
+function renderMelodyResult(name,noteData,bpm,url,blob){
+  document.getElementById('melody-title').textContent=name;
+  document.getElementById('melody-meta').textContent=`${bpm} BPM · ${noteData.length} notes`;
+  const disp=document.getElementById('melody-display');
+  if(!noteData.length){disp.innerHTML='<div style="color:var(--muted);font-size:13px;">No notes generated</div>';return;}
+  const maxTick=Math.max(...noteData.map(n=>n.tick+n.dur));
+  const minNote=Math.min(...noteData.map(n=>n.note));
+  const maxNote=Math.max(...noteData.map(n=>n.note));
+  const noteRange=maxNote-minNote||1;
+  const W=disp.clientWidth||600,H=60;
+  disp.innerHTML=`<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${
+    noteData.map(n=>{
+      const x=(n.tick/maxTick)*(W-4)+2,w=Math.max(4,(n.dur/maxTick)*W-2);
+      const y=H-((n.note-minNote)/noteRange)*(H-8)-4;
+      return`<rect x="${x}" y="${y}" width="${w}" height="6" rx="2" fill="var(--teal)" opacity="0.85"/>`;
+    }).join('')}</svg>`;
+  setupDragDownload('melody',url,blob,name);
+  document.getElementById('result-melody').classList.add('show');
+}
+function renderDrumsResult(name,gridData,bpm,bars,url,blob){
+  document.getElementById('drums-title').textContent=name;
+  document.getElementById('drums-meta').textContent=`${bpm} BPM · ${bars} bars`;
+  document.getElementById('drums-display').innerHTML=`<div class="drum-grid-display">${
+    gridData.map(row=>`<div class="drum-row-d"><span class="drum-label-d">${row.label}</span>${
+      row.steps.map((on,i)=>`<div class="drum-step-d ${on?'on':''} ${on&&i%4===0?'accent':''}"></div>`).join('')
+    }</div>`).join('')}</div>`;
+  setupDragDownload('drums',url,blob,name);
+  document.getElementById('result-drums').classList.add('show');
+}
+
+/* ════════════════════════════════════════════════
+   DRAG + DOWNLOAD
+════════════════════════════════════════════════ */
+const midiBlobs={};
+function setupDragDownload(type,url,blob,name){
+  midiBlobs[type]={url,blob,name};
+  const dl=document.getElementById('dl-'+type);
+  dl.href=url;
+  dl.download=`gritty-grave-${type}-${name.replace(/[^a-z0-9]/gi,'-').toLowerCase()}.mid`;
+  const drag=document.getElementById('drag-'+type);
+  drag.ondragstart=e=>{
+    drag.classList.add('dragging');
+    e.dataTransfer.effectAllowed='copy';
+    e.dataTransfer.setData('text/plain',dl.download);
+    e.dataTransfer.setData('DownloadURL',`audio/midi:${dl.download}:${url}`);
+  };
+  drag.ondragend=()=>drag.classList.remove('dragging');
+}
+
+/* ════════════════════════════════════════════════
+   SEND TO SEQUENCER
+════════════════════════════════════════════════ */
+document.getElementById('send-drums-seq').addEventListener('click',()=>{
+  if(!lastDrumGrid){gShowToast('Generate drums first','bad');return;}
+  lastDrumGrid.forEach(row=>{
+    const seqRow=SEQ_ROWS.find(r=>r.key===row.key);
+    if(seqRow){
+      seqRow.steps=row.steps.map(Boolean);
+      renderSeqRow(seqRow);
+    }
+  });
+  document.getElementById('seqWrapper').scrollIntoView({behavior:'smooth',block:'start'});
+  gShowToast('Drum pattern loaded into sequencer ↓');
+});
+
+document.getElementById('send-melody-seq').addEventListener('click',()=>{
+  if(!lastMelodyNotes){gShowToast('Generate melody first','bad');return;}
+  const seqRow=SEQ_ROWS.find(r=>r.key==='melody');
+  seqRow.steps=Array(16).fill(false);
+  seqRow.noteMap={};
+  lastMelodyNotes.forEach(n=>{
+    seqRow.steps[n.step]=true;
+    seqRow.noteMap[n.step]=n.note;
+  });
+  renderSeqRow(seqRow);
+  document.getElementById('seqWrapper').scrollIntoView({behavior:'smooth',block:'start'});
+  gShowToast('Melody loaded into sequencer ↓');
+});
+
+document.getElementById('send-chords-seq').addEventListener('click',()=>{
+  if(!lastChordNotes){gShowToast('Generate chords first','bad');return;}
+  const seqRow=SEQ_ROWS.find(r=>r.key==='melody');
+  seqRow.steps=Array(16).fill(false);
+  seqRow.noteMap={};
+  lastChordNotes.forEach(n=>{
+    seqRow.steps[n.step%16]=true;
+    seqRow.noteMap[n.step%16]=n.note;
+  });
+  renderSeqRow(seqRow);
+  document.getElementById('seqWrapper').scrollIntoView({behavior:'smooth',block:'start'});
+  gShowToast('Chord root notes loaded into sequencer ↓');
+});
+
+/* ════════════════════════════════════════════════
+   SEQUENCER ENGINE
+════════════════════════════════════════════════ */
+const SEQ_ROWS=[
+  {key:'kick', label:'KICK',    note:36, ch:9, steps:Array(16).fill(false), color:'#ff5747'},
+  {key:'snare',label:'SNARE',   note:38, ch:9, steps:Array(16).fill(false), color:'#ff9f47'},
+  {key:'hhc',  label:'HH CL',   note:42, ch:9, steps:Array(16).fill(false), color:'#ecc83a'},
+  {key:'hho',  label:'HH OP',   note:46, ch:9, steps:Array(16).fill(false), color:'#3fb6a8'},
+  {key:'melody',label:'MELODY', note:60, ch:0, steps:Array(16).fill(false), color:'#a9d92e', noteMap:{}},
+];
+
+let seqBpm=90, seqPlaying=false, seqStep=0, seqTimer=null;
+let actx=null, seqMaster=null, _seqComp=null;
+
+function initAudioSeq(){
+  if(actx) return;
+  actx=new (window.AudioContext||window.webkitAudioContext)();
+  seqMaster=actx.createGain(); seqMaster.gain.value=0.82;
+  _seqComp=actx.createDynamicsCompressor();
+  _seqComp.threshold.value=-12;
+  _seqComp.knee.value=6;
+  _seqComp.ratio.value=4;
+  _seqComp.attack.value=0.003;
+  _seqComp.release.value=0.12;
+  seqMaster.connect(_seqComp);
+  _seqComp.connect(actx.destination);
+}
+
+/* ── Drum synthesis engine ──────────────────────────────── */
+
+function playKick(vel=1.0){
+  // 808-style kick: sine with fast pitch envelope + click transient
+  const t=actx.currentTime;
+  const g=actx.createGain();
+  const o=actx.createOscillator();
+  // Pitch drops from 160Hz → 45Hz over 0.35s (punchy 808 feel)
+  o.frequency.setValueAtTime(160, t);
+  o.frequency.exponentialRampToValueAtTime(45, t+0.35);
+  o.type='sine';
+  // Volume envelope: fast attack, medium decay
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vel*1.1, t+0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001, t+0.5);
+  o.connect(g); g.connect(seqMaster);
+  o.start(t); o.stop(t+0.55);
+
+  // Click transient (adds the attack punch)
+  const click=actx.createOscillator();
+  const cg=actx.createGain();
+  click.frequency.setValueAtTime(800,t);
+  click.frequency.exponentialRampToValueAtTime(60,t+0.02);
+  click.type='sine';
+  cg.gain.setValueAtTime(vel*0.7,t);
+  cg.gain.exponentialRampToValueAtTime(0.0001,t+0.025);
+  click.connect(cg); cg.connect(seqMaster);
+  click.start(t); click.stop(t+0.03);
+}
+
+function playSnare(vel=1.0){
+  const t=actx.currentTime;
+  // Noise layer (the snare rattle)
+  const bufLen=actx.sampleRate*0.22;
+  const buf=actx.createBuffer(1,bufLen,actx.sampleRate);
+  const data=buf.getChannelData(0);
+  for(let i=0;i<bufLen;i++) data[i]=(Math.random()*2-1);
+  const noise=actx.createBufferSource();
+  noise.buffer=buf;
+  // Bandpass the noise to snare frequency range
+  const bp=actx.createBiquadFilter();
+  bp.type='bandpass';
+  bp.frequency.value=2800;
+  bp.Q.value=0.7;
+  const ng=actx.createGain();
+  ng.gain.setValueAtTime(vel*0.65,t);
+  ng.gain.exponentialRampToValueAtTime(0.0001,t+0.18);
+  noise.connect(bp); bp.connect(ng); ng.connect(seqMaster);
+  noise.start(t); noise.stop(t+0.22);
+
+  // Tonal body (the snare "crack")
+  const body=actx.createOscillator();
+  body.type='triangle';
+  body.frequency.setValueAtTime(220,t);
+  body.frequency.exponentialRampToValueAtTime(80,t+0.07);
+  const bg=actx.createGain();
+  bg.gain.setValueAtTime(vel*0.55,t);
+  bg.gain.exponentialRampToValueAtTime(0.0001,t+0.09);
+  body.connect(bg); bg.connect(seqMaster);
+  body.start(t); body.stop(t+0.1);
+}
+
+function playHHClosed(vel=1.0){
+  const t=actx.currentTime;
+  // White noise through highpass — metallic, very short
+  const bufLen=actx.sampleRate*0.08;
+  const buf=actx.createBuffer(1,bufLen,actx.sampleRate);
+  const data=buf.getChannelData(0);
+  for(let i=0;i<bufLen;i++) data[i]=(Math.random()*2-1);
+  const noise=actx.createBufferSource();
+  noise.buffer=buf;
+  const hp=actx.createBiquadFilter();
+  hp.type='highpass';
+  hp.frequency.value=7000;
+  hp.Q.value=0.5;
+  // Add a little metallic ring
+  const bp=actx.createBiquadFilter();
+  bp.type='bandpass';
+  bp.frequency.value=9000;
+  bp.Q.value=1.2;
+  const g=actx.createGain();
+  g.gain.setValueAtTime(vel*0.4,t);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+0.06);
+  noise.connect(hp); hp.connect(bp); bp.connect(g); g.connect(seqMaster);
+  noise.start(t); noise.stop(t+0.08);
+}
+
+function playHHOpen(vel=1.0){
+  const t=actx.currentTime;
+  // Same as closed but longer decay + slight low-mid content
+  const bufLen=actx.sampleRate*0.38;
+  const buf=actx.createBuffer(1,bufLen,actx.sampleRate);
+  const data=buf.getChannelData(0);
+  for(let i=0;i<bufLen;i++) data[i]=(Math.random()*2-1);
+  const noise=actx.createBufferSource();
+  noise.buffer=buf;
+  const hp=actx.createBiquadFilter();
+  hp.type='highpass';
+  hp.frequency.value=5500;
+  hp.Q.value=0.4;
+  const g=actx.createGain();
+  g.gain.setValueAtTime(vel*0.35,t);
+  g.gain.setValueAtTime(vel*0.35,t+0.05);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+0.35);
+  noise.connect(hp); hp.connect(g); g.connect(seqMaster);
+  noise.start(t); noise.stop(t+0.4);
+}
+
+function playMelodyNote(midiNote, vel=1.0, dur=0.22){
+  // Warm FM tone — much richer than triangle
+  const t=actx.currentTime;
+  const freq=440*Math.pow(2,(midiNote-69)/12);
+
+  // Carrier
+  const carrier=actx.createOscillator();
+  carrier.type='sine';
+  carrier.frequency.value=freq;
+
+  // Modulator (FM)
+  const modFreq=freq*2.01;
+  const mod=actx.createOscillator();
+  mod.type='sine';
+  mod.frequency.value=modFreq;
+  const modGain=actx.createGain();
+  modGain.gain.setValueAtTime(freq*1.8,t);
+  modGain.gain.exponentialRampToValueAtTime(freq*0.1,t+dur*0.4);
+  mod.connect(modGain);
+  modGain.connect(carrier.frequency);
+
+  // Sub-oscillator (warmth)
+  const sub=actx.createOscillator();
+  sub.type='sine';
+  sub.frequency.value=freq*0.5;
+  const subG=actx.createGain();
+  subG.gain.value=0.18;
+  sub.connect(subG);
+
+  // Amplitude envelope
+  const g=actx.createGain();
+  g.gain.setValueAtTime(0,t);
+  g.gain.linearRampToValueAtTime(vel*0.45,t+0.008);
+  g.gain.exponentialRampToValueAtTime(vel*0.22,t+dur*0.3);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+
+  carrier.connect(g); subG.connect(g); g.connect(seqMaster);
+  carrier.start(t); sub.start(t); mod.start(t);
+  carrier.stop(t+dur+0.05); sub.stop(t+dur+0.05); mod.stop(t+dur+0.05);
+}
+
+function playSeqNote(midiNote, channel, vel=90, dur=0.12){
+  if(!actx) return;
+  const v=vel/127;
+  if(channel===9){
+    if(midiNote===36)      playKick(v);
+    else if(midiNote===38) playSnare(v);
+    else if(midiNote===42) playHHClosed(v);
+    else if(midiNote===46) playHHOpen(v);
+    else                   playHHClosed(v*0.6);
+  } else {
+    playMelodyNote(midiNote, v, dur);
+  }
+}
+
+function tickSeq(){
+  const stepDur=(60/seqBpm/4)*1000;
+  const swing=parseFloat(document.getElementById('seqSwing').value);
+  const swingMs=seqStep%2===1?swing*stepDur:0;
+
+  // Highlight active step
+  document.querySelectorAll('.seq-step').forEach(el=>{
+    el.classList.remove('active-play');
+  });
+  document.querySelectorAll(`.seq-step[data-step="${seqStep}"]`).forEach(el=>{
+    el.classList.add('active-play');
+  });
+
+  // Play active notes
+  SEQ_ROWS.forEach(row=>{
+    if(row.steps[seqStep]){
+      const note=row.key==='melody'?(row.noteMap&&row.noteMap[seqStep]!=null?row.noteMap[seqStep]:row.note):row.note;
+      playSeqNote(note, row.ch, 90, row.key==='melody'?0.25:0.12);
+    }
+  });
+
+  seqStep=(seqStep+1)%16;
+  const nextDur=seqStep%2===1?stepDur+swingMs:stepDur-swingMs;
+  seqTimer=setTimeout(tickSeq, nextDur);
+}
+
+function startSeq(){
+  initAudioSeq();
+  if(actx.state==='suspended') actx.resume();
+  seqStep=0; seqPlaying=true;
+  document.getElementById('seqPlayBtn').textContent='⏸ Pause';
+  document.getElementById('seqPlayBtn').classList.add('playing');
+  tickSeq();
+}
+function pauseSeq(){
+  seqPlaying=false;
+  clearTimeout(seqTimer);
+  document.getElementById('seqPlayBtn').textContent='▶ Play';
+  document.getElementById('seqPlayBtn').classList.remove('playing');
+  document.querySelectorAll('.seq-step').forEach(el=>el.classList.remove('active-play'));
+}
+function stopSeq(){
+  pauseSeq(); seqStep=0;
+}
+
+document.getElementById('seqPlayBtn').addEventListener('click',()=>{
+  seqPlaying?pauseSeq():startSeq();
+});
+document.getElementById('seqStopBtn').addEventListener('click', stopSeq);
+
+// BPM controls
+document.getElementById('bpmDown').addEventListener('click',()=>{seqBpm=Math.max(40,seqBpm-1);document.getElementById('seqBpmDisplay').textContent=seqBpm;});
+document.getElementById('bpmUp').addEventListener('click',()=>{seqBpm=Math.min(200,seqBpm+1);document.getElementById('seqBpmDisplay').textContent=seqBpm;});
+document.getElementById('seqBpmDisplay').addEventListener('click',function(){
+  const v=parseInt(prompt('Enter BPM:',seqBpm));
+  if(v&&v>=40&&v<=200){seqBpm=v;this.textContent=v;}
+});
+
+/* ════════════════════════════════════════════════
+   SEQUENCER GRID RENDER
+════════════════════════════════════════════════ */
+function buildSeqGrid(){
+  const grid=document.getElementById('seqGrid');
+  grid.innerHTML='';
+  SEQ_ROWS.forEach(row=>{
+    const rowEl=document.createElement('div');
+    rowEl.className='seq-row';
+    rowEl.dataset.row=row.key;
+    rowEl.innerHTML=`<div class="seq-row-label">${row.label}<button class="seq-row-clear" title="Clear row" data-row="${row.key}">✕</button></div><div class="seq-steps" id="steps-${row.key}"></div>`;
+    grid.appendChild(rowEl);
+    renderSeqRow(row);
+  });
+  // Clear buttons
+  document.querySelectorAll('.seq-row-clear').forEach(btn=>{
+    btn.addEventListener('click',e=>{
+      e.stopPropagation();
+      const row=SEQ_ROWS.find(r=>r.key===btn.dataset.row);
+      if(row){row.steps=Array(16).fill(false);if(row.noteMap)row.noteMap={};renderSeqRow(row);}
+    });
+  });
+}
+
+function renderSeqRow(row){
+  const container=document.getElementById('steps-'+row.key);
+  if(!container) return;
+  container.innerHTML='';
+  row.steps.forEach((on,i)=>{
+    const step=document.createElement('div');
+    step.className='seq-step'+(on?' on':'');
+    step.dataset.step=i;
+    step.dataset.row=row.key;
+    step.title=`Step ${i+1}${row.key==='melody'&&row.noteMap&&row.noteMap[i]!=null?' — '+NOTE_NAMES[row.noteMap[i]%12]:''}`;
+    step.addEventListener('click',()=>{
+      row.steps[i]=!row.steps[i];
+      step.classList.toggle('on',row.steps[i]);
+      if(row.key==='melody'){
+        document.getElementById('melodyNotePickerWrap').style.display='block';
+        buildMelodyNotePicker(row,i);
+      }
+    });
+    container.appendChild(step);
+  });
+}
+
+let selectedMelodyStep=null;
+function buildMelodyNotePicker(row, step){
+  selectedMelodyStep=step;
+  const picker=document.getElementById('melodyNotePicker');
+  const octaves=[3,4,5];
+  picker.innerHTML='';
+  octaves.forEach(oct=>{
+    NOTE_NAMES.forEach((n,idx)=>{
+      const midi=12*(oct+1)+idx;
+      const btn=document.createElement('button');
+      btn.className='note-pick-btn';
+      btn.textContent=n+oct;
+      const currentNote=row.noteMap&&row.noteMap[step];
+      if(currentNote===midi) btn.classList.add('active');
+      btn.addEventListener('click',()=>{
+        if(!row.noteMap) row.noteMap={};
+        row.noteMap[step]=midi;
+        buildMelodyNotePicker(row,step);
+        renderSeqRow(row);
+      });
+      picker.appendChild(btn);
+    });
+  });
+}
+
+buildSeqGrid();
+
+/* ════════════════════════════════════════════════
+   DRAG-AND-DROP INTO SEQUENCER
+   Drag a generated result card directly onto the
+   drop zone to load that pattern into the grid.
+════════════════════════════════════════════════ */
+(function(){
+  const zone = document.getElementById('seqDropZone');
+
+  // Track what type is being dragged from the MIDI Maker
+  let dragType = null;
+
+  // Tag each drag button with its type when drag starts
+  ['chords','melody','drums'].forEach(type => {
+    const btn = document.getElementById('drag-'+type);
+    if(!btn) return;
+    btn.addEventListener('dragstart', () => { dragType = type; });
+    btn.addEventListener('dragend',   () => { dragType = null; });
+  });
+
+  // Drop zone highlight
+  zone.addEventListener('dragenter', e => {
+    e.preventDefault();
+    zone.classList.add('dragover');
+  });
+  zone.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    zone.classList.add('dragover');
+  });
+  zone.addEventListener('dragleave', e => {
+    if(!zone.contains(e.relatedTarget)) zone.classList.remove('dragover');
+  });
+
+  // On drop — load the correct pattern into the sequencer
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+
+    if(!dragType){
+      gShowToast('Generate a pattern first, then drag it here', 'bad');
+      return;
+    }
+
+    if(dragType === 'drums'){
+      if(!lastDrumGrid){ gShowToast('No drum pattern generated yet', 'bad'); return; }
+      lastDrumGrid.forEach(row => {
+        const seqRow = SEQ_ROWS.find(r => r.key === row.key);
+        if(seqRow){ seqRow.steps = row.steps.map(Boolean); renderSeqRow(seqRow); }
+      });
+      zone.textContent = '✅ Drum pattern loaded — hit Play ▶';
+      gShowToast('Drum pattern loaded into sequencer');
+
+    } else if(dragType === 'melody'){
+      if(!lastMelodyNotes){ gShowToast('No melody generated yet', 'bad'); return; }
+      const seqRow = SEQ_ROWS.find(r => r.key === 'melody');
+      seqRow.steps = Array(16).fill(false);
+      seqRow.noteMap = {};
+      lastMelodyNotes.forEach(n => {
+        seqRow.steps[n.step] = true;
+        seqRow.noteMap[n.step] = n.note;
+      });
+      renderSeqRow(seqRow);
+      zone.textContent = '✅ Melody loaded — hit Play ▶';
+      gShowToast('Melody loaded into sequencer');
+
+    } else if(dragType === 'chords'){
+      if(!lastChordNotes){ gShowToast('No chord progression generated yet', 'bad'); return; }
+      const seqRow = SEQ_ROWS.find(r => r.key === 'melody');
+      seqRow.steps = Array(16).fill(false);
+      seqRow.noteMap = {};
+      lastChordNotes.forEach(n => {
+        seqRow.steps[n.step % 16] = true;
+        seqRow.noteMap[n.step % 16] = n.note;
+      });
+      renderSeqRow(seqRow);
+      zone.textContent = '✅ Chord roots loaded — hit Play ▶';
+      gShowToast('Chord progression loaded into sequencer');
+    }
+
+    // Reset drop zone label after 3s
+    setTimeout(() => {
+      zone.textContent = '⠿ Drop a generated pattern here to load it into the sequencer';
+    }, 3000);
+  });
+})();
+
+/* ════════════════════════════════════════════════
+   SEQUENCER EXPORT
+════════════════════════════════════════════════ */
+document.getElementById('seqExportBtn').addEventListener('click',function(e){
+  e.preventDefault();
+  const tpq=480, stepTicks=tpq/4;
+  const drumEvents=[], melodyEvents=[];
+  SEQ_ROWS.forEach(row=>{
+    row.steps.forEach((on,i)=>{
+      if(!on) return;
+      const tick=i*stepTicks;
+      const note=row.key==='melody'?(row.noteMap&&row.noteMap[i]!=null?row.noteMap[i]:60):row.note;
+      const ch=row.ch, dur=row.key==='melody'?stepTicks*2:stepTicks-5;
+      const target=row.ch===9?drumEvents:melodyEvents;
+      target.push({type:'note_on',tick,note,vel:90,ch});
+      target.push({type:'note_off',tick:tick+dur,note,vel:0,ch});
+    });
+  });
+  const tracks=[...(drumEvents.length?[drumEvents]:[]),...(melodyEvents.length?[melodyEvents]:[])];
+  if(!tracks.length){gShowToast('Add some steps first','bad');return;}
+  const bytes=buildMidi(tracks,seqBpm);
+  const blob=midiBlob(bytes);
+  const url=blobUrl(blob);
+  this.href=url;
+  this.download='gritty-grave-sequencer.mid';
+  gShowToast('Sequencer pattern exported ✓');
+});
+
+/* ════════════════════════════════════════════════
+   MIDI MAKER UI WIRING
+════════════════════════════════════════════════ */
+document.querySelectorAll('.mode-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.gen-panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-'+tab.dataset.mode).classList.add('active');
+  });
+});
+['c','m','d'].forEach(p=>{
+  const s=document.getElementById(p+'-bpm'),d=document.getElementById(p+'-bpm-val');
+  s.addEventListener('input',()=>{d.textContent=s.value;});
+});
+document.getElementById('gen-chords-btn').addEventListener('click',generateChords);
+document.getElementById('gen-melody-btn').addEventListener('click',generateMelody);
+document.getElementById('gen-drums-btn').addEventListener('click',generateDrums);
+
+/* ════════════════════════════════════════════════
+   AUDIO TEARDOWN
+════════════════════════════════════════════════ */
+function shutdownAudio(){
+  stopSeq();
+  try{if(seqMaster)seqMaster.disconnect();}catch(e){}
+  try{if(_seqComp)_seqComp.disconnect();}catch(e){}
+  try{if(actx&&actx.state!=='closed'&&actx.state!=='suspended')actx.suspend().catch(()=>{});}catch(e){}
+}
+window.addEventListener('beforeunload',()=>shutdownAudio(),{capture:true});
+window.addEventListener('pagehide',()=>shutdownAudio(),{capture:true});
+window.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')shutdownAudio();});
+
+/* ════════════════════════════════════════════════
+   ANALYTICS
+════════════════════════════════════════════════ */
+(function(){
+  const U='https://gkglkyrnbgzjudjgqtye.supabase.co',
+        K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrZ2xreXJuYmd6anVkamdxdHllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NDAxNTIsImV4cCI6MjA5NTMxNjE1Mn0.Qmz3ni55c8evWaPjIEONeNiicQnqojBES-LlHOZafOo';
+  fetch(U+'/rest/v1/page_views',{method:'POST',headers:{'apikey':K,'Authorization':'Bearer '+K,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({page:'STUDIO',referrer:document.referrer||null})}).catch(()=>{});
+})();
+
+/* ════════════════════════════════════════════════
+   ADMIN MODAL
+════════════════════════════════════════════════ */
+const SUPABASE_URL_G='https://gkglkyrnbgzjudjgqtye.supabase.co';
+const SUPABASE_KEY_G='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrZ2xreXJuYmd6anVkamdxdHllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NDAxNTIsImV4cCI6MjA5NTMxNjE1Mn0.Qmz3ni55c8evWaPjIEONeNiicQnqojBES-LlHOZafOo';
+const SBG={
+  async req(method,path,body){const res=await fetch(SUPABASE_URL_G+'/rest/v1/'+path,{method,headers:{'apikey':SUPABASE_KEY_G,'Authorization':'Bearer '+SUPABASE_KEY_G,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':''},body:body?JSON.stringify(body):undefined});if(!res.ok)return null;const t=await res.text();return t?JSON.parse(t):null;},
+  async getSetting(key){const r=await this.req('GET','site_settings?key=eq.'+key+'&select=value');return r&&r[0]?r[0].value:null;},
+  async setSetting(key,value){const e=await this.req('GET','site_settings?key=eq.'+key+'&select=key');if(e&&e.length>0){await this.req('PATCH','site_settings?key=eq.'+key,{value});}else{await this.req('POST','site_settings',{key,value});}}
+};
+let gIsAdmin=false,gAdminPassword='grittygrave';
+(async()=>{try{const pw=await SBG.getSetting('admin_password');if(pw)gAdminPassword=pw;}catch(e){}})();
+const gModal=document.getElementById('globalAdminModal'),gBtn=document.getElementById('globalAdminBtn');
+gBtn.addEventListener('click',()=>{gModal.classList.add('show');gIsAdmin?showGDash():showGLogin();});
+document.getElementById('gAdminClose').addEventListener('click',()=>gModal.classList.remove('show'));
+gModal.addEventListener('click',e=>{if(e.target===gModal)gModal.classList.remove('show');});
+function showGLogin(){document.getElementById('gLoginView').style.display='';document.getElementById('gDashView').style.display='none';document.getElementById('gAdminTitle').textContent='Admin Login';document.getElementById('gLoginErr').textContent='';document.getElementById('gPwIn').value='';}
+function showGDash(){document.getElementById('gLoginView').style.display='none';document.getElementById('gDashView').style.display='';document.getElementById('gAdminTitle').textContent='Admin Panel';gBtn.classList.add('logged-in');}
+document.getElementById('gLoginBtn').addEventListener('click',tryGLogin);
+document.getElementById('gPwIn').addEventListener('keydown',e=>{if(e.key==='Enter')tryGLogin();});
+function tryGLogin(){if(document.getElementById('gPwIn').value===gAdminPassword){gIsAdmin=true;showGDash();}else{document.getElementById('gLoginErr').textContent='Wrong password.';}}
+document.querySelectorAll('.g-tab').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.g-tab').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.g-panel').forEach(x=>x.classList.remove('on'));t.classList.add('on');document.getElementById('gpanel-'+t.dataset.gtab).classList.add('on');});});
+document.getElementById('gSaveBioBtn').addEventListener('click',async()=>{const bio=document.getElementById('gBioInput').value.trim();if(!bio){document.getElementById('gBioErr').textContent='Bio cannot be empty.';return;}await SBG.setSetting('site_bio',bio);document.getElementById('gBioErr').textContent='';gModal.classList.remove('show');gShowToast('Bio saved');});
+document.getElementById('gSavePwBtn').addEventListener('click',async()=>{const cur=document.getElementById('gCurPw').value,np=document.getElementById('gNewPw').value,np2=document.getElementById('gNewPw2').value,err=document.getElementById('gPwErr');err.textContent='';if(cur!==gAdminPassword){err.textContent='Current password is wrong.';return;}if(!np||np.length<4){err.textContent='New password too short.';return;}if(np!==np2){err.textContent='Passwords do not match.';return;}await SBG.setSetting('admin_password',np);gAdminPassword=np;['gCurPw','gNewPw','gNewPw2'].forEach(id=>document.getElementById(id).value='');gShowToast('Password changed');});
+document.getElementById('gLogoutBtn').addEventListener('click',()=>{gIsAdmin=false;gBtn.classList.remove('logged-in');gModal.classList.remove('show');gShowToast('Logged out');});
+let gToastTimer;
+function gShowToast(msg,bad){const t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.className='toast show'+(bad?' bad':'');clearTimeout(gToastTimer);gToastTimer=setTimeout(()=>{t.className='toast'+(bad?' bad':'');},2000);}
+</script>
+</body>
+</html>

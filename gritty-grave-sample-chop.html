@@ -258,6 +258,8 @@
       <a class="nav-link" href="gritty-grave-beat-challenge.html">Challenge</a>
       <a class="nav-link" href="gritty-grave-piano-lab.html" target="_blank" rel="noopener">Piano Lab ↗</a>
       <a class="nav-link active" href="gritty-grave-sample-chop.html">Sample Chop</a>
+      <a class="nav-link" href="gritty-grave-studio.html">Studio</a>
+      <a class="nav-link" href="downloads.html">Downloads</a>
       </div>
     <button class="nav-admin-btn" id="globalAdminBtn" title="Admin">⚙</button>
   </div>
@@ -742,5 +744,14 @@ function gShowToast(msg,bad){
 }
 </script>
 
+<script>
+(function(){
+  const U='https://gkglkyrnbgzjudjgqtye.supabase.co',K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrZ2xreXJuYmd6anVkamdxdHllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NDAxNTIsImV4cCI6MjA5NTMxNjE1Mn0.Qmz3ni55c8evWaPjIEONeNiicQnqojBES-LlHOZafOo';
+  fetch(U+'/rest/v1/page_views',{method:'POST',
+    headers:{'apikey':K,'Authorization':'Bearer '+K,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify({page:'SAMPLE_CHOP',referrer:document.referrer||null})
+  }).catch(()=>{});
+})();
+</script>
 </body>
 </html>
