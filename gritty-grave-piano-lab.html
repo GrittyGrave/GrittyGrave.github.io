@@ -545,14 +545,6 @@
 </head>
 <body>
 
-<!-- ===== LEAVE COUNTDOWN OVERLAY ===== -->
-<div class="leave-overlay" id="leaveOverlay">
-  <div class="lo-title">Shutting Down Piano Lab</div>
-  <div class="lo-sub">Closing audio engine · please wait</div>
-  <div class="lo-count" id="loCount">5</div>
-  <div class="lo-bar-wrap"><div class="lo-bar" id="loBar"></div></div>
-  <button class="lo-cancel" id="loCancel">Cancel — Stay Here</button>
-</div>
 
 <nav class="site-nav">
   <div class="nav-inner">
@@ -1863,33 +1855,34 @@ function renderDeepDive(){
 
 
 /* ============================================================
-   LEAVE COUNTDOWN — gives audio engine time to shut down
+   AUDIO TEARDOWN + NAVIGATION
+   The countdown was causing race conditions. We now:
+   1. Disconnect ALL audio nodes immediately
+   2. Suspend the context
+   3. Navigate instantly — no countdown needed
    ============================================================ */
 let leaveTimer = null;
-let leaveDestination = null;
-let leaveCancelled = false;
 
 function shutdownAudio(){
-  // Step 1 — disconnect MIDI listeners
+  // Kill MIDI first
   try{
-    if(typeof midiAccess !== 'undefined' && midiAccess){
-      for(const input of midiAccess.inputs.values()){
-        input.onmidimessage = null;
-      }
-      midiAccess.onstatechange = null;
-      midiAccess = null;
+    if(midiAccess){
+      for(const input of midiAccess.inputs.values()) input.onmidimessage=null;
+      midiAccess.onstatechange=null;
+      midiAccess=null;
     }
   }catch(e){}
 
-  // Step 2 — disconnect the ENTIRE audio graph
-  // master→_comp→destination AND _conv→_rev→_comp must both be severed
-  // Previously only master was disconnected — the conv/rev chain stayed alive = crash
+  // Stop all active oscillators by zeroing master gain instantly
+  try{ if(master){ master.gain.cancelScheduledValues(0); master.gain.setValueAtTime(0,0); }}catch(e){}
+
+  // Disconnect every node in the graph
   try{ if(master) master.disconnect(); }catch(e){}
   try{ if(_conv)  _conv.disconnect();  }catch(e){}
   try{ if(_rev)   _rev.disconnect();   }catch(e){}
   try{ if(_comp)  _comp.disconnect();  }catch(e){}
 
-  // Step 3 — suspend (never close) the audio context
+  // Suspend — never close
   try{
     if(actx && actx.state !== 'closed' && actx.state !== 'suspended'){
       actx.suspend().catch(()=>{});
@@ -1897,73 +1890,21 @@ function shutdownAudio(){
   }catch(e){}
 }
 
-// Catch every possible exit path
-window.addEventListener('beforeunload',   ()=>{ shutdownAudio(); }, {capture:true});
-window.addEventListener('pagehide',       ()=>{ shutdownAudio(); }, {capture:true});
+// Fire on every possible exit path
+window.addEventListener('beforeunload',    ()=>shutdownAudio(), {capture:true});
+window.addEventListener('pagehide',        ()=>shutdownAudio(), {capture:true});
 window.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') shutdownAudio(); });
 
-function startLeaveCountdown(dest){
-  leaveDestination = dest;
-  leaveCancelled = false;
-  const overlay = document.getElementById('leaveOverlay');
-  const countEl = document.getElementById('loCount');
-  const bar = document.getElementById('loBar');
-  overlay.classList.add('show');
-
-  // Shut down audio immediately in background
+// Nav links — shut down audio THEN navigate immediately, no countdown
+document.addEventListener('click', e=>{
+  const link = e.target.closest('a[href]');
+  if(!link) return;
+  const dest = link.getAttribute('href');
+  if(!dest || dest.startsWith('#') || dest.includes('gritty-grave-piano-lab')) return;
+  e.preventDefault();
   shutdownAudio();
-
-  let count = 5;
-  countEl.textContent = count;
-  bar.style.transition = 'none';
-  bar.style.transform = 'scaleX(1)';
-
-  // Start bar drain
-  requestAnimationFrame(()=>{
-    bar.style.transition = 'transform 5s linear';
-    bar.style.transform = 'scaleX(0)';
-  });
-
-  leaveTimer = setInterval(()=>{
-    if(leaveCancelled) return;
-    count--;
-    countEl.textContent = count;
-    if(count <= 0){
-      clearInterval(leaveTimer);
-      window.location.href = leaveDestination;
-    }
-  }, 1000);
-}
-
-// Cancel button
-document.getElementById('loCancel').addEventListener('click', ()=>{
-  leaveCancelled = true;
-  clearInterval(leaveTimer);
-  document.getElementById('leaveOverlay').classList.remove('show');
-  leaveDestination = null;
-});
-
-// Intercept all nav link clicks
-document.addEventListener('click', e => {
-  const link = e.target.closest('a.nav-link[href]');
-  if(link && link.href){
-    const dest = link.href;
-    const current = window.location.href;
-    // Only intercept if navigating away from this page
-    if(!dest.includes('gritty-grave-piano-lab')){
-      e.preventDefault();
-      startLeaveCountdown(dest);
-    }
-  }
-});
-
-// Also catch the nav-logo link
-document.addEventListener('click', e => {
-  const link = e.target.closest('a.nav-logo[href]');
-  if(link && link.href){
-    e.preventDefault();
-    startLeaveCountdown(link.href);
-  }
+  // Small tick lets the browser process the suspend before navigating
+  setTimeout(()=>{ window.location.href = dest; }, 80);
 });
 
 </script>
